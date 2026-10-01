@@ -1,0 +1,60 @@
+#!/bin/sh
+# ----------------------------------------------------------------------------
+# Maven Wrapper (only-script flavour).
+# Downloads the Maven distribution declared in .mvn/wrapper/maven-wrapper.properties
+# into ~/.m2/wrapper/dists on first use, then delegates to it.
+# Environment: MVNW_VERBOSE=true for debug output, MVNW_USERNAME/MVNW_PASSWORD for
+# authenticated repositories, MAVEN_USER_HOME to relocate ~/.m2.
+# ----------------------------------------------------------------------------
+set -eu
+
+verbose() { if [ "${MVNW_VERBOSE:-false}" = "true" ]; then printf '%s\n' "$*"; fi; }
+die() { printf 'mvnw: %s\n' "$*" >&2; exit 1; }
+
+BASEDIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
+PROPS="$BASEDIR/.mvn/wrapper/maven-wrapper.properties"
+[ -f "$PROPS" ] || die "missing $PROPS"
+
+distributionUrl=$(sed -n 's/^distributionUrl=//p' "$PROPS" | tr -d '\r')
+[ -n "$distributionUrl" ] || die "distributionUrl not set in $PROPS"
+
+distFile=${distributionUrl##*/}
+distName=${distFile%-bin.*}
+if command -v sha256sum >/dev/null 2>&1; then
+  urlHash=$(printf '%s' "$distributionUrl" | sha256sum | cut -c1-32)
+elif command -v shasum >/dev/null 2>&1; then
+  urlHash=$(printf '%s' "$distributionUrl" | shasum -a 256 | cut -c1-32)
+else
+  urlHash=$(printf '%s' "$distributionUrl" | cksum | cut -d' ' -f1)
+fi
+
+MAVEN_USER_HOME=${MAVEN_USER_HOME:-"$HOME/.m2"}
+MAVEN_HOME="$MAVEN_USER_HOME/wrapper/dists/$distName/$urlHash"
+
+if [ ! -x "$MAVEN_HOME/bin/mvn" ]; then
+  verbose "Installing $distName into $MAVEN_HOME"
+  tmpDir=$(mktemp -d)
+  trap 'rm -rf "$tmpDir"' EXIT
+  if command -v curl >/dev/null 2>&1; then
+    if [ -n "${MVNW_USERNAME:-}" ]; then
+      curl -fsSL -u "$MVNW_USERNAME:${MVNW_PASSWORD:-}" -o "$tmpDir/$distFile" "$distributionUrl" || die "download failed: $distributionUrl"
+    else
+      curl -fsSL -o "$tmpDir/$distFile" "$distributionUrl" || die "download failed: $distributionUrl"
+    fi
+  elif command -v wget >/dev/null 2>&1; then
+    wget -q -O "$tmpDir/$distFile" "$distributionUrl" || die "download failed: $distributionUrl"
+  else
+    die "curl or wget is required to download Maven"
+  fi
+  case "$distFile" in
+    *.zip) command -v unzip >/dev/null 2>&1 || die "unzip is required"; unzip -q "$tmpDir/$distFile" -d "$tmpDir" ;;
+    *) tar -xzf "$tmpDir/$distFile" -C "$tmpDir" ;;
+  esac
+  mkdir -p "$(dirname "$MAVEN_HOME")"
+  rm -rf "$MAVEN_HOME"
+  mv "$tmpDir/$distName" "$MAVEN_HOME" || die "unexpected archive layout"
+  chmod +x "$MAVEN_HOME/bin/mvn"
+fi
+
+export MAVEN_PROJECTBASEDIR="$BASEDIR"
+exec "$MAVEN_HOME/bin/mvn" "$@"

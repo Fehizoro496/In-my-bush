@@ -1,0 +1,16 @@
+// !$*UTF8*$!
+// Minimal project.pbxproj stub for In my bush.
+// Run `flutter create --org mg.inmybush .` in this directory to regenerate
+// the full Xcode project with all build settings and targets.
+//
+// This file exists so the project directory structure is recognised by
+// Flutter tooling. It is NOT a complete Xcode project.
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+	};
+	rootObject = "97C146E61CF9000F007C117D";
+}

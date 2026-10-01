@@ -1,0 +1,114 @@
+/*
+ * In my bush — design tokens.
+ * Source of truth: docs/design-tokens.json. If a token changes, update
+ * docs/design-tokens.json, this file and mobile/lib/core/theme/app_colors.dart.
+ *
+ * The "extended" block holds shades that appear in the mockups but are not
+ * (yet) part of design-tokens.json.
+ */
+
+@theme {
+  /* Reset Tailwind's default palette: only brand tokens are available. */
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* color.pomme — primary (apple green) */
+  --color-pomme-50: #f4fae8;
+  --color-pomme-100: #f0f6e6;
+  --color-pomme-200: #ddebc9;
+  --color-pomme-300: #cfe89e;
+  --color-pomme-500: #8cc63f;
+  --color-pomme-600: #74ae2c;
+  --color-pomme-700: #4a7a12;
+  --color-pomme-800: #365a10;
+  --color-pomme-900: #1f3608;
+
+  /* color.orange — secondary, promos and every counter badge */
+  --color-orange-50: #fff4e8;
+  --color-orange-100: #fff1e0;
+  --color-orange-200: #fee4c7;
+  --color-orange-300: #fbc98f;
+  --color-orange-500: #f28c28;
+  --color-orange-600: #d86f12;
+  --color-orange-700: #b4500a;
+  --color-orange-800: #8a3d06;
+  --color-orange-900: #3a1e05;
+
+  /* color.neutral */
+  --color-bg: #fbfaf6;
+  --color-surface: #ffffff;
+  --color-sand: #f4f0e6;
+  --color-line: #eae6db;
+  --color-line-strong: #e6e2d6;
+  --color-divider: #f1eee5;
+  --color-disabled: #a3a094;
+  --color-muted: #66655b;
+  --color-body: #4a4a42;
+  --color-ink: #1f2318;
+
+  /* semantic */
+  --color-info-bg: #e8f1fa;
+  --color-info-fg: #22527e;
+  --color-info-strong: #2f6da8;
+  --color-success-bg: #eaf4da;
+  --color-success-fg: #365a10;
+  --color-danger-bg: #fdecea;
+  --color-danger-border: #e6b8b3;
+  --color-danger-fg: #c0352b;
+
+  --color-on-primary: #1f3608;
+  --color-on-secondary: #3a1e05;
+  --color-admin-sidebar: #1f2318;
+
+  /* extended (mockup shades) */
+  --color-mint: #e6f3cc; /* selected chips, soft highlights */
+  --color-lime: #b2da6a; /* dashed borders, dark-surface accents */
+  --color-leaf: #5c9120;
+  --color-stone: #c9c4b5; /* unchecked checkbox / radio border */
+  --color-pebble: #d8d3c4; /* switch off */
+  --color-fog: #efece3; /* disabled button background */
+  --color-admin-bg: #f6f4ee;
+  --color-danger-ink: #a02b22;
+  --color-warn-ink: #6b3208;
+  --color-text-soft: #33342c;
+
+  /* font */
+  --font-display: var(--font-bricolage), "Trebuchet MS", sans-serif;
+  --font-sans: var(--font-figtree), "Segoe UI", system-ui, sans-serif;
+
+  /* fontSize (px values from the tokens) */
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-md: 15px;
+  --text-lg: 17px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  --text-3xl: 34px;
+  --text-4xl: 48px;
+  --text-5xl: 56px;
+
+  /* radius */
+  --radius-sm: 9px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 999px;
+
+  /* shadows */
+  --shadow-sm: 0 1px 2px rgba(31, 35, 24, 0.06), 0 1px 1px rgba(31, 35, 24, 0.04);
+  --shadow-md: 0 6px 20px rgba(31, 35, 24, 0.08);
+  --shadow-lg: 0 16px 40px rgba(31, 35, 24, 0.14);
+  --shadow-card: 0 1px 2px rgba(31, 35, 24, 0.04);
+  --shadow-card-hover: 0 10px 28px rgba(31, 35, 24, 0.1);
+
+  /* motion */
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* size */
+  --spacing-touch: 44px;
+  --spacing-button: 52px;
+  --spacing-input: 48px;
+  --spacing-web-header: 128px;
+  --spacing-admin-sidebar: 256px;
+}

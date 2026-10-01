@@ -1,0 +1,155 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a {
+    color: var(--color-pomme-700);
+  }
+  a:hover {
+    color: var(--color-pomme-800);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: 3px solid rgba(116, 174, 44, 0.6);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-disabled);
+  }
+}
+
+@layer utilities {
+  .font-tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .h-display {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+  }
+  .overline {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .ring-focus {
+    box-shadow: 0 0 0 4px rgba(140, 198, 63, 0.28);
+  }
+}
+
+@keyframes imb-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f1eee5 25%, #f8f6f0 50%, #f1eee5 75%);
+  background-size: 200% 100%;
+  animation: imb-shimmer 1.4s linear infinite;
+}
+
+@keyframes imb-pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-pop {
+  animation: imb-pop 400ms var(--ease-standard) both;
+}
+
+@keyframes imb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: imb-spin 0.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Dual price range (catalogue filters) */
+.imb-range {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  pointer-events: none;
+  height: 22px;
+  margin: 0;
+}
+.imb-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid #74ae2c;
+  box-shadow: 0 1px 3px rgba(31, 35, 24, 0.2);
+  cursor: pointer;
+}
+.imb-range::-moz-range-thumb {
+  pointer-events: auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid #74ae2c;
+  cursor: pointer;
+}
+.imb-range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 5px rgba(140, 198, 63, 0.35);
+}
+.imb-range::-webkit-slider-runnable-track {
+  background: transparent;
+}

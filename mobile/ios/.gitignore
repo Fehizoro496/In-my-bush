@@ -1,0 +1,14 @@
+**/dgph
+**/Pods/
+**/.symlinks/
+**/Flutter/App.framework
+**/Flutter/Flutter.framework
+**/Flutter/Flutter.podspec
+**/Flutter/Generated.xcconfig
+**/Flutter/ephemeral/
+**/Flutter/flutter_export_environment.sh
+**/Pods
+.generated/
+Flutter/Generated.xcconfig
+Flutter/ephemeral/
+Flutter/flutter_export_environment.sh

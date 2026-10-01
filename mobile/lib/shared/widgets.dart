@@ -1,0 +1,24 @@
+// Design-system widgets (import this barrel from screens).
+export 'widgets/app_bottom_sheet.dart';
+export 'widgets/app_icons.dart';
+export 'widgets/app_logo.dart';
+export 'widgets/app_top_bar.dart';
+export 'widgets/avatar.dart';
+export 'widgets/badges.dart';
+export 'widgets/buttons.dart';
+export 'widgets/cards.dart';
+export 'widgets/chips.dart';
+export 'widgets/feedback.dart';
+export 'widgets/inputs.dart';
+export 'widgets/main_tab_scaffold.dart';
+export 'widgets/order_timeline.dart';
+export 'widgets/price_text.dart';
+export 'widgets/product_card.dart';
+export 'widgets/quantity_stepper.dart';
+export 'widgets/rating.dart';
+export 'widgets/section_header.dart';
+export 'widgets/segmented.dart';
+export 'widgets/seller_card.dart';
+export 'widgets/settings_tile.dart';
+export 'widgets/skeleton.dart';
+export 'models/visual.dart';

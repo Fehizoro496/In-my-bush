@@ -1,0 +1,29 @@
+name: in_my_bush
+description: "In my bush — marketplace de produits bio (Madagascar). Application mobile acheteur + vendeur."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+  flutter: '>=3.27.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1
+  go_router: ^14.6.2
+  dio: ^5.7.0
+  google_fonts: ^6.2.1
+  lucide_icons_flutter: ^3.0.0
+  intl: ^0.20.2
+  flutter_secure_storage: ^9.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

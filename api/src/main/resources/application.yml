@@ -1,0 +1,90 @@
+server:
+  servlet:
+    context-path: /api/v1
+  error:
+    include-message: always
+
+spring:
+  application:
+    name: in-my-bush-api
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:inmybush}
+    username: ${DB_USER:inmybush}
+    password: ${DB_PASS:inmybush}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: public
+        jdbc:
+          time_zone: UTC
+  flyway:
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: alpha
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:change-me-to-a-random-string-of-at-least-32-bytes}
+    issuer: in-my-bush
+    access-token-ttl: 15m
+    refresh-token-ttl: 30d
+  cors:
+    allowed-origins:
+      - http://localhost:3000
+      - http://localhost:4000
+  upload:
+    dir: ${UPLOAD_DIR:./uploads}
+    public-base-url: ${UPLOAD_BASE_URL:http://localhost:8080/api/v1/uploads}
+  otp:
+    ttl: 5m
+    expose-code: true  # dev only — set to false in production
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+logging:
+  level:
+    mg.inmybush: DEBUG
+    org.springframework.security: INFO
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  flyway:
+    locations: classpath:db/migration,classpath:db/dev
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  jpa:
+    show-sql: false
+  flyway:
+    locations: classpath:db/migration
+
+app:
+  otp:
+    expose-code: false
+
+logging:
+  level:
+    mg.inmybush: INFO
