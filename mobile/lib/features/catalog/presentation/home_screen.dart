@@ -237,7 +237,7 @@ class _PromoBanner extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            AppTag(
+                            const AppTag(
                               label: '−20 % jusqu’à dimanche',
                               background: AppColors.orange500,
                               foreground: AppColors.onSecondary,
@@ -309,12 +309,12 @@ class _FeedSections extends StatelessWidget {
         const SizedBox(height: 28),
         SectionHeader(
           title: 'Promotions',
-          badge: AppTag(
+          badge: const AppTag(
             label: 'jusqu’à −30 %',
             background: AppColors.orange100,
             foreground: AppColors.orange700,
             fontWeight: FontWeight.w800,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           ),
           actionLabel: 'Voir tout',
           onAction: onSeeAll,

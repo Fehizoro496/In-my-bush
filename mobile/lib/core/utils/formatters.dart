@@ -1,8 +1,7 @@
 // Formatting helpers (Ariary amounts, French numbers and dates).
-///
+//
 // Dates are formatted by hand (no locale data to initialise), so they work
-/// identically in the app, in tests and in isolates.
-
+// identically in the app, in tests and in isolates.
 
 /// `12000` → `"12 000 Ar"`, `-4250` → `"−4 250 Ar"`. Amounts are whole Ariary.
 String formatAriary(num amount) => '${formatThousands(amount)} Ar';

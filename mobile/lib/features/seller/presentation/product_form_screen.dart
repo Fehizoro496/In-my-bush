@@ -373,7 +373,7 @@ class _PhotoGrid extends StatelessWidget {
                       fit: StackFit.expand,
                       children: [
                         const ProductThumb(visual: Visual(tint: '#DDEBC9', ink: '#365A10'), size: double.infinity, radius: 14, iconSize: 56),
-                        Positioned(
+                        const Positioned(
                           left: 8,
                           top: 8,
                           child: AppTag(label: 'Principale', background: AppColors.ink, foreground: Colors.white, fontSize: 11, fontWeight: FontWeight.w800),

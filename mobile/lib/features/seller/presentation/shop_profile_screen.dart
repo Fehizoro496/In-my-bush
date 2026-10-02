@@ -91,7 +91,7 @@ class _ShopProfileScreenState extends ConsumerState<ShopProfileScreen> {
                     const SizedBox(height: 20),
 
                     // Shop info section
-                    SectionHeader(title: 'Informations', titleSize: 18),
+                    const SectionHeader(title: 'Informations', titleSize: 18),
                     const SizedBox(height: 10),
                     _InfoRow(label: 'Nom', value: shop.name),
                     _InfoRow(label: 'Description', value: shop.description),
@@ -99,7 +99,7 @@ class _ShopProfileScreenState extends ConsumerState<ShopProfileScreen> {
                     const SizedBox(height: 20),
 
                     // Pickup section
-                    SectionHeader(title: 'Retrait en boutique', titleSize: 18),
+                    const SectionHeader(title: 'Retrait en boutique', titleSize: 18),
                     const SizedBox(height: 10),
                     AppCard(
                       radius: 14,
@@ -135,7 +135,7 @@ class _ShopProfileScreenState extends ConsumerState<ShopProfileScreen> {
                     const SizedBox(height: 20),
 
                     // Delivery section
-                    SectionHeader(title: 'Livraison', titleSize: 18),
+                    const SectionHeader(title: 'Livraison', titleSize: 18),
                     const SizedBox(height: 10),
                     AppCard(
                       radius: 14,

@@ -226,14 +226,14 @@ abstract class OrdersMockData {
                 quantityLabel: '4 kg',
                 visual: CatalogMockData.tomates.visual,
               ),
-              OrderItem(
+              const OrderItem(
                 id: 'oi-9',
                 productId: 'prd-panier-de-saison',
                 productName: 'Panier de saison',
                 unitPrice: 10000,
                 unitLabel: 'panier',
                 quantity: 1,
-                visual: const Visual(tint: '#E6F3CC', ink: '#365A10', icon: 'basket'),
+                visual: Visual(tint: '#E6F3CC', ink: '#365A10', icon: 'basket'),
               ),
             ],
           ),

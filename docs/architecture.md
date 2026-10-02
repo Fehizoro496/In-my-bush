@@ -9,8 +9,7 @@ in-my-bush/
 ├── mobile/     App Flutter (acheteur + vendeur)
 ├── web/        Next.js : site public, espace compte/vendeur, backoffice /admin
 ├── api/        Spring Boot 3 + PostgreSQL (API REST /api/v1)
-├── docs/       Architecture, design tokens, conventions
-└── docker-compose.yml   PostgreSQL + Adminer pour le dev local
+└── docs/       Architecture, design tokens, conventions
 ```
 
 Chaque dossier est un projet autonome (son propre outil de build, ses dépendances, son README). Pas d'outil de monorepo imposé : on garde les trois écosystèmes (pub, npm, Maven) indépendants. Le contrat entre eux est l'API REST (section 5), et le style est partagé via `docs/design-tokens.json`.

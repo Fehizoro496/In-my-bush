@@ -102,7 +102,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 radius: 14,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 onTap: () => context.push(
-                  conversation!.context == MessageContext.sale
+                  conversation.context ==MessageContext.sale
                       ? AppRoutes.orderReceived(conversation.orderId!)
                       : AppRoutes.order(conversation.orderId!),
                 ),
