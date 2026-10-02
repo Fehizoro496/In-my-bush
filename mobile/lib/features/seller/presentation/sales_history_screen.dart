@@ -119,7 +119,7 @@ class _SalesHistoryScreenState extends ConsumerState<SalesHistoryScreen> {
                       const SizedBox(height: 22),
 
                       // Records
-                      SectionHeader(title: 'Dernières ventes', titleSize: 18),
+                      const SectionHeader(title: 'Dernières ventes', titleSize: 18),
                       const SizedBox(height: 10),
                       if (h.records.isEmpty)
                         const EmptyState(

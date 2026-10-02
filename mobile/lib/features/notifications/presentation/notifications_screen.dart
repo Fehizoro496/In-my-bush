@@ -193,7 +193,7 @@ class _NotificationTile extends StatelessWidget {
                   width: 9,
                   height: 9,
                   decoration: const BoxDecoration(color: AppColors.orange500, shape: BoxShape.circle),
-                  child: const Semantics(label: 'Non lue'),
+                  child: Semantics(label: 'Non lue'),
                 ),
               ],
             ],

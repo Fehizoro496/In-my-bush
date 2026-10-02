@@ -205,7 +205,7 @@ class _ReviewCard extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(LucideIcons.reply, size: 16, color: AppColors.pomme700),
+                  const Icon(LucideIcons.reply, size: 16, color: AppColors.pomme700),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(

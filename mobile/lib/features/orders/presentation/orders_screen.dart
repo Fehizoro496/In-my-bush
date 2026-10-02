@@ -108,8 +108,8 @@ class _PurchaseCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final p = purchase;
     final status = p.status;
-    final detail = () => context.push(AppRoutes.order(p.id));
-    final contact = () => context.push(AppRoutes.chat('conv-ra'));
+    void detail() => context.push(AppRoutes.order(p.id));
+    void contact() => context.push(AppRoutes.chat('conv-ra'));
 
     List<Widget> actions;
     switch (status) {

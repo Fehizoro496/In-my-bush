@@ -137,15 +137,15 @@ class _SellerViewState extends ConsumerState<_SellerView> {
                   ),
                   const Spacer(),
                   if (s.verified)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 8),
                       child: AppTag(
                         label: 'Vendeur vérifié',
                         icon: AppIcons.shield,
                         background: AppColors.infoBg,
                         foreground: AppColors.infoFg,
                         radius: 999,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
                     ),
                 ],
