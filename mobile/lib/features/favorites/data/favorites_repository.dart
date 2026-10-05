@@ -1,10 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/api_exception.dart';
 import '../../../core/network/data_source.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/network/endpoints/endpoints.dart';
 import '../../../core/utils/json.dart';
 import '../../catalog/data/catalog_mock_data.dart';
-import '../../catalog/data/catalog_models.dart';
+import '../../catalog/data/catalog_repository.dart';
+import '../../catalog/data/models/models.dart';
 
 abstract class FavoritesRepository {
   Future<List<Product>> getFavoriteProducts();
@@ -74,23 +77,46 @@ class MockFavoritesRepository implements FavoritesRepository {
 }
 
 class ApiFavoritesRepository implements FavoritesRepository {
-  ApiFavoritesRepository(this._api);
+  ApiFavoritesRepository(this._api, this._catalog);
 
   final ApiClient _api;
+  final CatalogRepository _catalog;
+
+  /// Favorites are flat rows (`productId`, `productName`, `price`…): the full
+  /// product is loaded by slug, with the row itself as a fallback.
+  Future<Product> _product(JsonMap json) async {
+    try {
+      return await _catalog.getProduct(readString(json['productSlug']));
+    } on ApiException {
+      return Product(
+        id: readString(json['productId']),
+        slug: readString(json['productSlug']),
+        name: readString(json['productName']),
+        price: readInt(json['price']),
+        unit: ProductUnit.piece,
+        unitLabel: '',
+        shopId: '',
+        shopName: readString(json['shopName']),
+        shopSlug: readString(json['shopSlug']),
+        images: [if (readStringOrNull(json['imageUrl']) != null) readString(json['imageUrl'])],
+      );
+    }
+  }
 
   @override
-  Future<List<Product>> getFavoriteProducts() async =>
-      (await _api.getList('/me/favorites')).map((e) => Product.fromJson(readMap(e))).toList();
+  Future<List<Product>> getFavoriteProducts() async => Future.wait([
+        for (final e in await _api.getList(FavoritesEndpoints.favorites, query: {'size': 50})) _product(readMap(e)),
+      ]);
 
   /// Followed shops are not part of the v1 API yet: empty list.
   @override
   Future<List<Shop>> getFavoriteShops() async => const [];
 
   @override
-  Future<void> addProduct(String productId) async => _api.put('/me/favorites/$productId');
+  Future<void> addProduct(String productId) async => _api.put(FavoritesEndpoints.favorite(productId));
 
   @override
-  Future<void> removeProduct(String productId) async => _api.delete('/me/favorites/$productId');
+  Future<void> removeProduct(String productId) async => _api.delete(FavoritesEndpoints.favorite(productId));
 
   @override
   Future<void> followShop(String shopId, bool follow) async {}
@@ -98,5 +124,5 @@ class ApiFavoritesRepository implements FavoritesRepository {
 
 final favoritesRepositoryProvider = Provider<FavoritesRepository>((ref) {
   if (ref.watch(useMockDataProvider)) return MockFavoritesRepository();
-  return ApiFavoritesRepository(ref.watch(apiClientProvider));
+  return ApiFavoritesRepository(ref.watch(sessionApiClientProvider), ref.watch(catalogRepositoryProvider));
 });

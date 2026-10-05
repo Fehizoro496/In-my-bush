@@ -7,7 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../shared/widgets.dart';
-import '../../catalog/data/catalog_models.dart';
+import '../../catalog/data/models/models.dart';
 import '../seller_providers.dart';
 
 /// M-My-Products — products & stock (inline stock stepper, visibility).

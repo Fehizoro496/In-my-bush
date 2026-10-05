@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../catalog/data/catalog_models.dart';
+import '../catalog/data/models/models.dart';
 import 'data/favorites_repository.dart';
 
 /// Favorite products (full list, used by the Favoris screen). Toggling keeps

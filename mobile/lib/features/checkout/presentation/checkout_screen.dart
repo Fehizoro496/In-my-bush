@@ -8,11 +8,11 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../shared/widgets.dart';
-import '../../account/data/account_models.dart';
 import '../../account/data/account_repository.dart';
+import '../../account/data/models/models.dart';
 import '../../auth/auth_controller.dart';
 import '../../cart/cart_providers.dart';
-import '../../orders/data/order_models.dart';
+import '../../orders/data/models/models.dart';
 import '../../orders/data/orders_repository.dart';
 import '../data/checkout_repository.dart';
 

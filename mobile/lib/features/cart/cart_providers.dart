@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../catalog/data/catalog_models.dart';
-import 'data/cart_models.dart';
+import '../catalog/data/models/models.dart';
 import 'data/cart_repository.dart';
+import 'data/models/models.dart';
 
 /// Cart state shared by the top-bar badge, product cards, cart and checkout.
 class CartController extends AsyncNotifier<Cart> {

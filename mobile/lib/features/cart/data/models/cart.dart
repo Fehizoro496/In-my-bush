@@ -1,52 +1,17 @@
-import '../../../core/utils/json.dart';
-import '../../catalog/data/catalog_models.dart';
+import 'package:json_annotation/json_annotation.dart';
 
-/// `cart_items` joined with the product.
-class CartItem {
-  const CartItem({required this.id, required this.product, required this.quantity});
+import '../../../../core/utils/json.dart';
+import '../../../../core/utils/parsers.dart';
+import 'cart_item.dart';
+import 'cart_shop_group.dart';
 
-  factory CartItem.fromJson(JsonMap json) => CartItem(
-        id: readString(json['id']),
-        product: Product.fromJson(readMap(json['product'])),
-        quantity: readInt(json['quantity'], 1),
-      );
+part 'cart.g.dart';
 
-  final String id;
-  final Product product;
-  final int quantity;
-
-  int get lineTotal => product.price * quantity;
-
-  CartItem copyWith({int? quantity}) => CartItem(id: id, product: product, quantity: quantity ?? this.quantity);
-
-  JsonMap toJson() => {'id': id, 'product': product.toJson(), 'quantity': quantity};
-}
-
-/// Items of one shop (each shop prepares and delivers its own part).
-class CartShopGroup {
-  const CartShopGroup({
-    required this.shopId,
-    required this.shopName,
-    required this.shopSlug,
-    required this.items,
-  });
-
-  final String shopId;
-  final String shopName;
-  final String shopSlug;
-  final List<CartItem> items;
-
-  int get subtotal => items.fold(0, (sum, item) => sum + item.lineTotal);
-}
-
+@JsonSerializable()
 class Cart {
   const Cart({this.items = const [], this.promoCode, this.deliveryFeePerShop = 3000});
 
-  factory Cart.fromJson(JsonMap json) => Cart(
-        items: readList(json['items'], CartItem.fromJson),
-        promoCode: readStringOrNull(json['promoCode']),
-        deliveryFeePerShop: readInt(json['deliveryFeePerShop'], 3000),
-      );
+  factory Cart.fromJson(JsonMap json) => _$CartFromJson(json);
 
   static const empty = Cart();
 
@@ -56,6 +21,7 @@ class Cart {
 
   final List<CartItem> items;
   final String? promoCode;
+  @JsonKey(fromJson: parseInt)
   final int deliveryFeePerShop;
 
   bool get isEmpty => items.isEmpty;
@@ -102,9 +68,5 @@ class Cart {
         deliveryFeePerShop: deliveryFeePerShop,
       );
 
-  JsonMap toJson() => compactJson({
-        'items': items.map((e) => e.toJson()).toList(),
-        'promoCode': promoCode,
-        'deliveryFeePerShop': deliveryFeePerShop,
-      });
+  JsonMap toJson() => _$CartToJson(this);
 }

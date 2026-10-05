@@ -8,9 +8,8 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../shared/widgets.dart';
 import '../../auth/auth_controller.dart';
-import '../../catalog/data/catalog_mock_data.dart';
-import '../../orders/data/order_models.dart';
-import '../data/seller_models.dart';
+import '../../orders/data/models/models.dart';
+import '../data/models/models.dart';
 import '../seller_providers.dart';
 import 'widgets/seller_widgets.dart';
 
@@ -32,8 +31,8 @@ class _SellDashboardScreenState extends ConsumerState<SellDashboardScreen> {
 
     final dashboard = ref.watch(sellerDashboardProvider(_period));
     final orders = ref.watch(sellerOrdersProvider);
-    final shop = CatalogMockData.jardinDeHery;
-    final shopName = user?.shopName ?? shop.name;
+    final shopName = user?.shopName ?? 'Ma boutique';
+    final shopSlug = user?.shopSlug;
 
     return Scaffold(
       body: SafeArea(
@@ -68,7 +67,7 @@ class _SellDashboardScreenState extends ConsumerState<SellDashboardScreen> {
                     icon: AppIcons.eye,
                     style: AppIconButtonStyle.outline,
                     semanticLabel: 'Voir ma boutique',
-                    onPressed: () => context.push(AppRoutes.seller(shop.slug)),
+                    onPressed: shopSlug == null ? null : () => context.push(AppRoutes.seller(shopSlug)),
                   ),
                 ],
               ),

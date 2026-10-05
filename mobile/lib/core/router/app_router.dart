@@ -6,6 +6,7 @@ import '../../features/account/presentation/addresses_screen.dart';
 import '../../features/account/presentation/payments_screen.dart';
 import '../../features/account/presentation/profile_screen.dart';
 import '../../features/account/presentation/settings_screen.dart';
+import '../../features/auth/auth_controller.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/cart/presentation/cart_screen.dart';
 import '../../features/catalog/presentation/categories_screen.dart';
@@ -46,11 +47,26 @@ final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 /// `/messages` · Vendre `/vendre` · Notifs `/notifications` · Paramètres
 /// `/parametres`. Screens shown with the tab bar in the mockups live inside
 /// their branch; the others are pushed on the root navigator.
+///
+/// The whole app requires a session: without an authenticated user every
+/// route redirects to `/connexion`.
 final routerProvider = Provider<GoRouter>((ref) {
+  // Re-evaluates the redirect whenever the session changes.
+  final session = ValueNotifier<int>(0);
+  ref.listen(authControllerProvider, (_, __) => session.value++);
+  ref.onDispose(session.dispose);
+
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: AppRoutes.home,
     debugLogDiagnostics: false,
+    refreshListenable: session,
+    redirect: (context, state) {
+      final signedIn = ref.read(authControllerProvider).valueOrNull != null;
+      final onLogin = state.matchedLocation == AppRoutes.login;
+      if (!signedIn) return onLogin ? null : AppRoutes.login;
+      return onLogin ? AppRoutes.home : null;
+    },
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => _TabShell(navigationShell: navigationShell),

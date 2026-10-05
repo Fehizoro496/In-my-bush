@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import '../config/app_config.dart';
 import '../utils/json.dart';
@@ -20,9 +21,18 @@ final dioProvider = Provider<Dio>((ref) {
       headers: const {'Accept': 'application/json, application/problem+json'},
     ),
   );
-  dio.interceptors.add(AuthInterceptor(dio: dio, storage: ref.watch(tokenStorageProvider)));
+  dio.interceptors
+      .add(AuthInterceptor(dio: dio, storage: ref.watch(tokenStorageProvider)));
   if (kDebugMode) {
-    dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: false, logPrint: (Object line) => debugPrint(line.toString())));
+    dio.interceptors.add(PrettyDioLogger(
+      requestHeader: true,
+      requestBody: true,
+      responseBody: true,
+      responseHeader: false,
+      compact: true,
+      maxWidth: 100,
+      logPrint: (Object line) => debugPrint(line.toString()),
+    ));
   }
   return dio;
 });
@@ -37,8 +47,10 @@ class ApiClient {
   Future<dynamic> get(String path, {Map<String, dynamic>? query}) =>
       _send(() => dio.get<dynamic>(path, queryParameters: _clean(query)));
 
-  Future<dynamic> post(String path, {Object? body, Map<String, dynamic>? query}) =>
-      _send(() => dio.post<dynamic>(path, data: body, queryParameters: _clean(query)));
+  Future<dynamic> post(String path,
+          {Object? body, Map<String, dynamic>? query}) =>
+      _send(() =>
+          dio.post<dynamic>(path, data: body, queryParameters: _clean(query)));
 
   Future<dynamic> patch(String path, {Object? body}) =>
       _send(() => dio.patch<dynamic>(path, data: body));
@@ -51,7 +63,8 @@ class ApiClient {
   Future<JsonMap> getMap(String path, {Map<String, dynamic>? query}) async =>
       readMap(await get(path, query: query));
 
-  Future<List<dynamic>> getList(String path, {Map<String, dynamic>? query}) async {
+  Future<List<dynamic>> getList(String path,
+      {Map<String, dynamic>? query}) async {
     final data = await get(path, query: query);
     if (data is List) return data;
     // Some endpoints are paginated: { items: [...] }
@@ -71,9 +84,21 @@ class ApiClient {
   static Map<String, dynamic>? _clean(Map<String, dynamic>? query) {
     if (query == null) return null;
     final copy = Map<String, dynamic>.of(query)
-      ..removeWhere((key, value) => value == null || (value is String && value.isEmpty));
+      ..removeWhere(
+          (key, value) => value == null || (value is String && value.isEmpty));
     return copy;
   }
 }
 
-final apiClientProvider = Provider<ApiClient>((ref) => ApiClient(ref.watch(dioProvider)));
+final apiClientProvider =
+    Provider<ApiClient>((ref) => ApiClient(ref.watch(dioProvider)));
+
+/// Bumped on every login / logout so that user-scoped data is reloaded.
+final sessionEpochProvider = StateProvider<int>((ref) => 0);
+
+/// [ApiClient] for user-scoped repositories (cart, orders, messages…): it is
+/// rebuilt when the session changes, which refreshes everything built on it.
+final sessionApiClientProvider = Provider<ApiClient>((ref) {
+  ref.watch(sessionEpochProvider);
+  return ApiClient(ref.watch(dioProvider));
+});

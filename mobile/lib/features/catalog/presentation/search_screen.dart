@@ -9,7 +9,7 @@ import '../../../core/utils/formatters.dart';
 import '../../../shared/widgets.dart';
 import '../catalog_providers.dart';
 import '../data/catalog_mock_data.dart';
-import '../data/catalog_models.dart';
+import '../data/models/models.dart';
 import 'widgets/product_tile.dart';
 
 /// M-Search — suggestions, producers, recent searches, trends, results.

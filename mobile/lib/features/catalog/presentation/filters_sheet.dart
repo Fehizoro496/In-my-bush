@@ -6,7 +6,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../shared/widgets.dart';
 import '../catalog_providers.dart';
-import '../data/catalog_models.dart';
+import '../data/models/models.dart';
 
 /// M-Filters — bottom sheet (`/filtres`) editing a draft of the catalogue
 /// query; "Afficher N produits" applies it.

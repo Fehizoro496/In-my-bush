@@ -24,6 +24,9 @@ cd web && cp .env.example .env.local && npm install && npm run dev
 
 # 4. Mobile
 cd mobile && flutter pub get && flutter run
+
+# Mobile : après toute modification d'un modèle (@JsonSerializable), régénérer les *.g.dart
+cd mobile && dart run build_runner build ---delete-conflicting-outputs
 ```
 
 Voir [`docs/architecture.md`](docs/architecture.md) pour le découpage, les routes de chaque app, le modèle de données et la liste des endpoints.

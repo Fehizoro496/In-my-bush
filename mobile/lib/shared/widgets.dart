@@ -21,4 +21,5 @@ export 'widgets/segmented.dart';
 export 'widgets/seller_card.dart';
 export 'widgets/settings_tile.dart';
 export 'widgets/skeleton.dart';
+export 'models/avatar_look.dart';
 export 'models/visual.dart';

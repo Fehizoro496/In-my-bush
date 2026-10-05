@@ -1,10 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/api_exception.dart';
 import '../../../core/network/data_source.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/network/endpoints/endpoints.dart';
 import '../../../core/utils/json.dart';
-import '../../orders/data/order_models.dart' show PaymentMethod;
-import 'account_models.dart';
+import '../../orders/data/models/models.dart' show PaymentMethod;
+import 'models/models.dart';
 
 abstract class AccountRepository {
   Future<AppUser> getMe();
@@ -40,6 +42,7 @@ abstract class AccountMockData {
     phoneVerified: true,
     emailVerified: true,
     shopName: 'Le Jardin de Hery',
+    shopSlug: 'le-jardin-de-hery',
   );
 
   static List<Address> addresses() => const [
@@ -157,56 +160,72 @@ class ApiAccountRepository implements AccountRepository {
 
   final ApiClient _api;
 
-  @override
-  Future<AppUser> getMe() async => AppUser.fromJson(await _api.getMap('/me'));
+  /// `/me` does not carry the shop: sellers get it from `/seller/shop`.
+  Future<AppUser> _withShop(AppUser user) async {
+    if (!user.isSeller) return user;
+    try {
+      final shop = await _api.getMap(SellerEndpoints.shop);
+      return user.copyWith(
+        shopName: readStringOrNull(shop['name']),
+        shopSlug: readStringOrNull(shop['slug']),
+        city: readString(shop['city']),
+      );
+    } on ApiException {
+      return user;
+    }
+  }
 
   @override
+  Future<AppUser> getMe() async => _withShop(AppUser.fromJson(await _api.getMap(AccountEndpoints.me)));
+
+  /// The API has no city on the user: [city] is ignored.
+  @override
   Future<AppUser> updateMe({String? fullName, String? email, String? city}) async {
-    final body = <String, dynamic>{'email': email, 'city': city};
+    final body = <String, dynamic>{'email': email};
     if (fullName != null) {
       final parts = fullName.trim().split(RegExp(r'\s+'));
       body['firstName'] = parts.first;
       body['lastName'] = parts.skip(1).join(' ');
     }
-    return AppUser.fromJson(readMap(await _api.patch('/me', body: compactJson(body))));
+    return _withShop(AppUser.fromJson(readMap(await _api.patch(AccountEndpoints.me, body: compactJson(body)))));
   }
 
   @override
   Future<List<Address>> getAddresses() async =>
-      (await _api.getList('/me/addresses')).map((e) => Address.fromJson(readMap(e))).toList();
+      (await _api.getList(AccountEndpoints.addresses)).map((e) => Address.fromJson(readMap(e))).toList();
 
   @override
   Future<Address> saveAddress(Address address) async {
+    final body = address.toJson()..remove('id');
     final data = address.id.isEmpty
-        ? await _api.post('/me/addresses', body: address.toJson())
-        : await _api.patch('/me/addresses/${address.id}', body: address.toJson());
+        ? await _api.post(AccountEndpoints.addresses, body: body)
+        : await _api.patch(AccountEndpoints.address(address.id), body: body);
     return Address.fromJson(readMap(data));
   }
 
   @override
-  Future<void> deleteAddress(String id) async => _api.delete('/me/addresses/$id');
+  Future<void> deleteAddress(String id) async => _api.delete(AccountEndpoints.address(id));
 
   @override
-  Future<void> setDefaultAddress(String id) async => _api.patch('/me/addresses/$id', body: {'isDefault': true});
+  Future<void> setDefaultAddress(String id) async => _api.patch(AccountEndpoints.address(id), body: {'isDefault': true});
 
   @override
   Future<List<SavedPaymentMethod>> getPaymentMethods() async =>
-      (await _api.getList('/me/payout-methods')).map((e) => SavedPaymentMethod.fromJson(readMap(e))).toList();
+      (await _api.getList(AccountEndpoints.payoutMethods)).map((e) => SavedPaymentMethod.fromJson(readMap(e))).toList();
 
   @override
   Future<void> setDefaultPaymentMethod(String id) async {}
 
+  /// Payouts are not exposed by the API yet: only the destination wallet is
+  /// known (default payout method), the next amount stays at 0.
   @override
   Future<PayoutSummary> getPayoutSummary() async {
-    final payouts = await _api.getList('/seller/payouts', query: {'status': 'SCHEDULED', 'size': 1});
-    if (payouts.isEmpty) {
-      return PayoutSummary(nextAmount: 0, nextDate: DateTime.now(), destination: '');
-    }
-    final json = readMap(payouts.first);
+    final methods = await getPaymentMethods();
+    final wallet = methods.where((m) => m.isDefault).firstOrNull ?? methods.firstOrNull;
     return PayoutSummary(
-      nextAmount: readInt(json['amount']),
-      nextDate: readDate(json['periodEnd']) ?? DateTime.now(),
-      destination: readString(json['destination']),
+      nextAmount: 0,
+      nextDate: DateTime.now(),
+      destination: wallet == null ? '' : '${wallet.label} ${wallet.detail}',
     );
   }
 }
@@ -216,10 +235,17 @@ final accountRepositoryProvider = Provider<AccountRepository>((ref) {
   return ApiAccountRepository(ref.watch(apiClientProvider));
 });
 
-final addressesProvider = FutureProvider<List<Address>>((ref) => ref.watch(accountRepositoryProvider).getAddresses());
+final addressesProvider = FutureProvider<List<Address>>((ref) {
+  ref.watch(sessionEpochProvider);
+  return ref.watch(accountRepositoryProvider).getAddresses();
+});
 
-final paymentMethodsProvider =
-    FutureProvider<List<SavedPaymentMethod>>((ref) => ref.watch(accountRepositoryProvider).getPaymentMethods());
+final paymentMethodsProvider = FutureProvider<List<SavedPaymentMethod>>((ref) {
+  ref.watch(sessionEpochProvider);
+  return ref.watch(accountRepositoryProvider).getPaymentMethods();
+});
 
-final payoutSummaryProvider =
-    FutureProvider<PayoutSummary>((ref) => ref.watch(accountRepositoryProvider).getPayoutSummary());
+final payoutSummaryProvider = FutureProvider<PayoutSummary>((ref) {
+  ref.watch(sessionEpochProvider);
+  return ref.watch(accountRepositoryProvider).getPayoutSummary();
+});

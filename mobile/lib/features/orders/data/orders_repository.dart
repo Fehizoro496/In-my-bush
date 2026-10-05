@@ -2,12 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/data_source.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/network/endpoints/endpoints.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/json.dart';
+import '../../../shared/models/avatar_look.dart';
 import '../../../shared/models/visual.dart';
 import '../../catalog/data/catalog_mock_data.dart';
-import '../../catalog/data/catalog_models.dart';
-import 'order_models.dart';
+import '../../catalog/data/models/models.dart';
+import 'models/models.dart';
 
 /// Buyer side of the orders (`/me/orders`).
 abstract class OrdersRepository {
@@ -306,32 +308,33 @@ class ApiOrdersRepository implements OrdersRepository {
 
   final ApiClient _api;
 
+  Future<Order> _order(String id) async => Order.fromJson(await _api.getMap(OrdersEndpoints.order(id)));
+
+  /// The list endpoint returns summaries without lines: each order is
+  /// completed with its detail (items, events).
   @override
   Future<List<Purchase>> getPurchases() async {
-    final orders = (await _api.getList('/me/orders', query: {'size': 50})).map((e) => Order.fromJson(readMap(e))).toList();
+    final summaries = await _api.getList(OrdersEndpoints.orders, query: {'size': 20});
+    final orders = await Future.wait([for (final e in summaries) _order(readString(readMap(e)['id']))]);
     return Purchase.groupOrders(orders);
   }
 
+  /// The API does not expose the checkout an order belongs to: a purchase is
+  /// a single order.
   @override
-  Future<Purchase> getPurchase(String id) async {
-    final order = Order.fromJson(await _api.getMap('/me/orders/$id'));
-    final all = await getPurchases();
-    return all.firstWhere(
-      (p) => p.orders.any((o) => o.id == order.id),
-      orElse: () => Purchase(id: order.id, number: order.number, createdAt: order.createdAt, orders: [order]),
-    );
-  }
+  Future<Purchase> getPurchase(String id) async => Purchase.groupOrders([await _order(id)]).first;
 
   @override
-  Future<void> cancelOrder(String orderId) async => _api.post('/me/orders/$orderId/cancel');
+  Future<void> cancelOrder(String orderId) async =>
+      _api.post(OrdersEndpoints.cancel(orderId), body: const <String, dynamic>{});
 
   @override
-  Future<void> confirmDelivery(String orderId) async => _api.post('/me/orders/$orderId/confirm-delivery');
+  Future<void> confirmDelivery(String orderId) async => _api.post(OrdersEndpoints.confirmDelivery(orderId));
 }
 
 final ordersRepositoryProvider = Provider<OrdersRepository>((ref) {
   if (ref.watch(useMockDataProvider)) return MockOrdersRepository();
-  return ApiOrdersRepository(ref.watch(apiClientProvider));
+  return ApiOrdersRepository(ref.watch(sessionApiClientProvider));
 });
 
 final purchasesProvider = FutureProvider<List<Purchase>>((ref) => ref.watch(ordersRepositoryProvider).getPurchases());

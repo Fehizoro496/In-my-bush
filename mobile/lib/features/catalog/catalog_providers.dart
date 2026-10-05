@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'data/catalog_models.dart';
 import 'data/catalog_repository.dart';
+import 'data/models/models.dart';
 
 final categoriesProvider = FutureProvider<List<Category>>(
   (ref) => ref.watch(catalogRepositoryProvider).getCategories(),

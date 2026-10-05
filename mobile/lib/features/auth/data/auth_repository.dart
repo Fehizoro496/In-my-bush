@@ -1,11 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/api_exception.dart';
 import '../../../core/network/data_source.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/network/endpoints/endpoints.dart';
 import '../../../core/network/token_storage.dart';
 import '../../../core/utils/json.dart';
-import '../../account/data/account_models.dart';
 import '../../account/data/account_repository.dart';
+import '../../account/data/models/models.dart';
 
 abstract class AuthRepository {
   /// Restores the session (null = signed out).
@@ -79,7 +81,6 @@ class ApiAuthRepository implements AuthRepository {
       accessToken: readString(json['accessToken']),
       refreshToken: readStringOrNull(json['refreshToken']),
     );
-    if (json['user'] is Map) return AppUser.fromJson(readMap(json['user']));
     return _account.getMe();
   }
 
@@ -96,12 +97,12 @@ class ApiAuthRepository implements AuthRepository {
 
   @override
   Future<AppUser> login({required String phone, required String password}) async =>
-      _session(await _api.post('/auth/login', body: {'phone': normalizePhone(phone), 'password': password}));
+      _session(await _api.post(AuthEndpoints.login, body: {'identifier': normalizePhone(phone), 'password': password}));
 
   @override
   Future<AppUser> register({required String fullName, required String phone, required String password}) async {
     final parts = fullName.trim().split(RegExp(r'\s+'));
-    return _session(await _api.post('/auth/register', body: {
+    return _session(await _api.post(AuthEndpoints.register, body: {
       'firstName': parts.first,
       'lastName': parts.skip(1).join(' '),
       'phone': normalizePhone(phone),
@@ -110,17 +111,23 @@ class ApiAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> requestOtp(String phone) async => _api.post('/auth/otp/request', body: {'phone': normalizePhone(phone)});
+  Future<void> requestOtp(String phone) async => _api.post(AuthEndpoints.otpRequest, body: {'phone': normalizePhone(phone)});
 
   @override
-  Future<AppUser> verifyOtp({required String phone, required String code}) async =>
-      _session(await _api.post('/auth/otp/verify', body: {'phone': normalizePhone(phone), 'code': code}));
+  Future<AppUser> verifyOtp({required String phone, required String code}) async {
+    final json = readMap(await _api.post(AuthEndpoints.otpVerify, body: {'phone': normalizePhone(phone), 'code': code}));
+    // `auth` is only present when an account already exists for this phone.
+    if (json['auth'] is! Map) {
+      throw const ApiException(title: 'Compte introuvable', detail: 'Aucun compte n’est associé à ce numéro.');
+    }
+    return _session(json['auth']);
+  }
 
   @override
   Future<void> logout() async {
     final refresh = await _tokens.readRefreshToken();
     try {
-      await _api.post('/auth/logout', body: {'refreshToken': refresh});
+      await _api.post(AuthEndpoints.logout, body: {'refreshToken': refresh});
     } finally {
       await _tokens.clear();
     }

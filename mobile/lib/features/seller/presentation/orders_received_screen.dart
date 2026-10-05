@@ -7,7 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../shared/widgets.dart';
-import '../../orders/data/order_models.dart';
+import '../../orders/data/models/models.dart';
 import '../data/seller_repository.dart';
 import '../seller_providers.dart';
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/utils/formatters.dart';
+import '../models/avatar_look.dart';
 import '../models/visual.dart';
 import 'app_icons.dart';
 import 'avatar.dart';

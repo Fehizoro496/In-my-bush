@@ -2,12 +2,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/data_source.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/network/endpoints/endpoints.dart';
+import '../../../core/network/token_storage.dart';
+import '../../../core/utils/formatters.dart';
 import '../../../core/utils/json.dart';
+import '../../../shared/models/avatar_look.dart';
 import '../../../shared/models/visual.dart';
 import '../../catalog/data/catalog_mock_data.dart';
-import '../../catalog/data/catalog_models.dart';
-import '../../orders/data/order_models.dart';
-import 'seller_models.dart';
+import '../../catalog/data/models/models.dart';
+import '../../orders/data/models/models.dart';
+import 'models/models.dart';
 
 /// Seller space (`/seller/...`).
 abstract class SellerRepository {
@@ -433,108 +437,276 @@ class MockSellerRepository implements SellerRepository {
   }
 }
 
+/// Paid or payable order, as returned by `GET /seller/orders` (summary).
+typedef _Sale = ({String id, String number, OrderStatus status, int total, int itemCount, String buyer, String paymentStatus, DateTime date});
+
 class ApiSellerRepository implements SellerRepository {
-  ApiSellerRepository(this._api);
+  ApiSellerRepository(this._api, this._tokens);
 
   final ApiClient _api;
+  final TokenStorage _tokens;
 
-  @override
-  Future<Shop> openShop({required String name, required String location, required String description, required Set<String> kinds}) async =>
-      Shop.fromJson(readMap(await _api.post('/seller/shop', body: {
-        'name': name,
-        'city': location,
-        'description': description,
-        'tags': kinds.toList(),
-      })));
+  /// Unit labels of the product form → `products.unit`.
+  static const _units = {
+    'botte': 'BUNCH',
+    'kg': 'KG',
+    'pièce': 'PIECE',
+    'pot': 'JAR',
+    'litre': 'L',
+    'barquette': 'PACK',
+    'lot': 'PACK',
+    'panier': 'PACK',
+  };
 
-  @override
-  Future<SellerDashboard> getDashboard(SalesPeriod period) async =>
-      SellerDashboard.fromJson(await _api.getMap('/seller/dashboard', query: {'period': period.name}));
+  static const _months = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
 
-  @override
-  Future<List<Product>> getProducts() async =>
-      (await _api.getList('/seller/products', query: {'size': 100})).map((e) => Product.fromJson(readMap(e))).toList();
+  /// "Antsirabe, Vakinankaratra" → city + region (both required by the API).
+  static ({String city, String region}) _place(String location) {
+    final parts = location.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+    final city = parts.isEmpty ? '' : parts.first;
+    return (city: city, region: parts.length > 1 ? parts[1] : city);
+  }
 
-  @override
-  Future<Product> getProduct(String id) async => Product.fromJson(await _api.getMap('/seller/products/$id'));
+  static int _days(SalesPeriod period) {
+    switch (period) {
+      case SalesPeriod.week:
+        return 7;
+      case SalesPeriod.month:
+        return 30;
+      case SalesPeriod.halfYear:
+        return 182;
+      case SalesPeriod.year:
+        return 365;
+    }
+  }
 
+  /// Orders that count as revenue, newest first.
+  Future<List<_Sale>> _sales() async {
+    final all = (await _api.getList(SellerEndpoints.orders, query: {'size': 100})).map((e) {
+      final json = readMap(e);
+      return (
+        id: readString(json['id']),
+        number: readString(json['number']),
+        status: OrderStatus.fromApi(json['status']),
+        total: readInt(json['total']),
+        itemCount: readInt(json['itemCount']),
+        buyer: readString(json['buyerName']),
+        paymentStatus: readString(json['paymentStatus']),
+        date: readDate(json['createdAt']) ?? DateTime.now(),
+      );
+    });
+    return all.where((o) => o.status != OrderStatus.refused && o.status != OrderStatus.cancelled).toList();
+  }
+
+  static int _sum(Iterable<_Sale> sales) => sales.fold(0, (sum, o) => sum + o.total);
+
+  /// The shop is created with a new token pair carrying the SELLER role.
   @override
-  Future<Product> saveProduct(ProductDraft draft, {bool submit = true}) async {
-    final data = draft.id == null
-        ? await _api.post('/seller/products', body: draft.toJson())
-        : await _api.patch('/seller/products/${draft.id}', body: draft.toJson());
-    final product = Product.fromJson(readMap(data));
-    if (submit && draft.id == null) await _api.post('/seller/products/${product.id}/submit');
-    return product;
+  Future<Shop> openShop({required String name, required String location, required String description, required Set<String> kinds}) async {
+    final place = _place(location);
+    final json = readMap(await _api.post(SellerEndpoints.shop, body: {
+      'name': name,
+      'description': description,
+      'city': place.city,
+      'region': place.region,
+    }));
+    final auth = readMap(json['auth']);
+    final access = readStringOrNull(auth['accessToken']);
+    if (access != null) {
+      await _tokens.save(accessToken: access, refreshToken: readStringOrNull(auth['refreshToken']));
+    }
+    return Shop.fromJson(readMap(json['shop']));
+  }
+
+  /// There is no dashboard endpoint: the figures are computed from the
+  /// seller's orders, products and shop.
+  @override
+  Future<SellerDashboard> getDashboard(SalesPeriod period) async {
+    final sales = await _sales();
+    final products = await getProducts();
+    final shop = await _api.getMap(SellerEndpoints.shop);
+
+    final now = DateTime.now();
+    final span = Duration(days: _days(period));
+    final current = sales.where((o) => o.date.isAfter(now.subtract(span))).toList();
+    final previous = _sum(sales.where((o) => o.date.isAfter(now.subtract(span * 2)) && !o.date.isAfter(now.subtract(span))));
+    final revenue = _sum(current);
+
+    const dayLabels = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+    final today = DateTime(now.year, now.month, now.day);
+    final published = products.where((p) => p.status == ProductStatus.published).toList();
+    return SellerDashboard(
+      revenue: revenue,
+      trendPercent: previous == 0 ? 0 : (revenue - previous) * 100 / previous,
+      bars: [
+        for (var i = 6; i >= 0; i--)
+          () {
+            final day = today.subtract(Duration(days: i));
+            return SalesBar(
+              label: dayLabels[day.weekday - 1],
+              value: _sum(sales.where((o) => o.date.year == day.year && o.date.month == day.month && o.date.day == day.day)),
+            );
+          }(),
+      ],
+      ordersReceived: current.length,
+      toPrepare: sales.where((o) => o.status == OrderStatus.pendingConfirmation || o.status == OrderStatus.accepted).length,
+      activeProducts: published.length,
+      drafts: products.where((p) => p.status == ProductStatus.draft).length,
+      lowStock: published.where((p) => p.isLowStock || p.isOutOfStock).length,
+      ratingAvg: readDouble(shop['ratingAvg']),
+      ratingCount: readInt(shop['ratingCount']),
+    );
   }
 
   @override
-  Future<void> deleteProduct(String id) async => _api.delete('/seller/products/$id');
+  Future<List<Product>> getProducts() async =>
+      (await _api.getList(SellerEndpoints.products, query: {'size': 100})).map((e) => Product.fromJson(readMap(e))).toList();
+
+  @override
+  Future<Product> getProduct(String id) async => Product.fromJson(await _api.getMap(SellerEndpoints.product(id)));
+
+  /// "Fruits & légumes › Herbes & brèdes" → id of the deepest category the
+  /// API knows (first category as a last resort: `categoryId` is required).
+  Future<String> _categoryId(String path) async {
+    final categories = (await _api.getList(CatalogEndpoints.categories)).map(readMap).toList();
+    for (final segment in path.split('›').map((s) => slugify(s)).toList().reversed) {
+      for (final c in categories) {
+        if (segment.isNotEmpty && (readString(c['slug']) == segment || slugify(readString(c['name'])) == segment)) {
+          return readString(c['id']);
+        }
+      }
+    }
+    return categories.isEmpty ? '' : readString(categories.first['id']);
+  }
+
+  @override
+  Future<Product> saveProduct(ProductDraft draft, {bool submit = true}) async {
+    final unitLabel = draft.unitLabel.trim().toLowerCase();
+    final body = compactJson({
+      'name': draft.name.isEmpty ? null : draft.name,
+      'description': draft.description,
+      'price': draft.price,
+      'unit': _units[unitLabel],
+      'unitLabel': unitLabel.isEmpty ? null : unitLabel,
+      'stock': draft.stock,
+      'lowStockThreshold': draft.lowStockThreshold,
+      'originRegion': draft.origin.isEmpty ? null : draft.origin,
+    });
+    if (draft.id != null) {
+      return Product.fromJson(readMap(await _api.patch(SellerEndpoints.product(draft.id!), body: body)));
+    }
+    body['categoryId'] = await _categoryId(draft.categoryPath);
+    body['unit'] ??= 'PIECE';
+    body['stock'] ??= 0;
+    body['submit'] = submit;
+    return Product.fromJson(readMap(await _api.post(SellerEndpoints.products, body: body)));
+  }
+
+  @override
+  Future<void> deleteProduct(String id) async => _api.delete(SellerEndpoints.product(id));
 
   @override
   Future<Product> updateStock(String id, int stock) async =>
-      Product.fromJson(readMap(await _api.patch('/seller/products/$id/stock', body: {'stock': stock})));
+      Product.fromJson(readMap(await _api.patch(SellerEndpoints.productStock(id), body: {'stock': stock})));
+
+  /// Hiding a product is not supported by the API yet: the product is
+  /// returned as it is on the server.
+  @override
+  Future<Product> setVisibility(String id, bool visible) => getProduct(id);
+
+  /// The list endpoint returns summaries without lines: each order is
+  /// completed with its detail (items, events).
+  @override
+  Future<List<Order>> getOrders() async {
+    final summaries = await _api.getList(SellerEndpoints.orders, query: {'size': 30});
+    return Future.wait([for (final e in summaries) getOrder(readString(readMap(e)['id']))]);
+  }
 
   @override
-  Future<Product> setVisibility(String id, bool visible) async => Product.fromJson(
-        readMap(await _api.patch('/seller/products/$id', body: {'status': visible ? 'PUBLISHED' : 'ARCHIVED'})),
-      );
+  Future<Order> getOrder(String id) async => Order.fromJson(await _api.getMap(SellerEndpoints.order(id)));
 
   @override
-  Future<List<Order>> getOrders() async =>
-      (await _api.getList('/seller/orders', query: {'size': 100})).map((e) => Order.fromJson(readMap(e))).toList();
+  Future<Order> transition(String id, String action) async => Order.fromJson(readMap(await _api.post(
+        SellerEndpoints.orderAction(id, action),
+        body: action == 'refuse' ? const {'reason': 'Commande refusée par le vendeur'} : null,
+      )));
 
-  @override
-  Future<Order> getOrder(String id) async => Order.fromJson(await _api.getMap('/seller/orders/$id'));
-
-  @override
-  Future<Order> transition(String id, String action) async =>
-      Order.fromJson(readMap(await _api.post('/seller/orders/$id/$action')));
-
+  /// There is no sales endpoint: the history is computed from the seller's
+  /// orders. The commission is not exposed, so the net equals the gross.
   @override
   Future<SalesHistory> getSales(SalesPeriod period) async {
-    final json = await _api.getMap('/seller/sales', query: {'period': period.name});
+    final now = DateTime.now();
+    final all = await _sales();
+    final sales = all.where((o) => o.date.isAfter(now.subtract(Duration(days: _days(period))))).toList();
+    final gross = _sum(sales);
     return SalesHistory(
-      gross: readInt(json['gross']),
-      commission: readInt(json['commission']),
-      net: readInt(json['net']),
-      bars: readList(json['bars'], (b) => SalesBar(label: readString(b['label']), value: readInt(b['value']))),
-      records: readList(json['items'], SaleRecord.fromJson),
+      gross: gross,
+      commission: 0,
+      net: gross,
+      bars: [
+        for (var i = 5; i >= 0; i--)
+          () {
+            final month = DateTime(now.year, now.month - i);
+            return SalesBar(
+              label: _months[month.month - 1],
+              value: _sum(all.where((o) => o.date.year == month.year && o.date.month == month.month)),
+            );
+          }(),
+      ],
+      records: [
+        for (final o in sales)
+          SaleRecord(
+            orderId: o.id,
+            number: o.number,
+            client: o.buyer,
+            itemsSummary: plural(o.itemCount, 'article'),
+            amount: o.total,
+            payout: PayoutState.fromPaymentStatus(o.paymentStatus),
+            date: o.date,
+          ),
+      ],
     );
   }
 
   @override
   Future<List<Review>> getReviews() async =>
-      (await _api.getList('/seller/reviews')).map((e) => Review.fromJson(readMap(e))).toList();
+      (await _api.getList(SellerEndpoints.reviews, query: {'size': 50})).map((e) => Review.fromJson(readMap(e))).toList();
 
   @override
   Future<Review> reply(String reviewId, String text) async =>
-      Review.fromJson(readMap(await _api.post('/seller/reviews/$reviewId/reply', body: {'reply': text})));
+      Review.fromJson(readMap(await _api.post(SellerEndpoints.reviewReply(reviewId), body: {'reply': text})));
 
+  /// Pick-up days, delivery zones and fee are not stored by the API yet.
   @override
   Future<ShopSettings> getShopSettings() async {
-    final json = await _api.getMap('/seller/shop');
+    final json = await _api.getMap(SellerEndpoints.shop);
     return ShopSettings(
       name: readString(json['name']),
       description: readString(json['description']),
       location: [readString(json['city']), readString(json['region'])].where((s) => s.isNotEmpty).join(', '),
-      pickupDays: readStringList(json['pickupDays']).toSet(),
-      pickupFrom: readString(json['pickupFrom'], '8h00'),
-      pickupTo: readString(json['pickupTo'], '12h00'),
-      zones: readStringList(json['deliveryZones']),
-      deliveryFee: readInt(json['deliveryFee'], 3000),
+      pickupDays: const {},
+      pickupFrom: '8h00',
+      pickupTo: '12h00',
+      zones: const [],
       paused: readString(json['status']) == 'PAUSED',
     );
   }
 
   @override
   Future<ShopSettings> saveShopSettings(ShopSettings settings) async {
-    await _api.patch('/seller/shop', body: settings.toJson());
+    final place = _place(settings.location);
+    await _api.patch(SellerEndpoints.shop, body: compactJson({
+      'name': settings.name.isEmpty ? null : settings.name,
+      'description': settings.description,
+      'city': place.city.isEmpty ? null : place.city,
+      'region': place.region.isEmpty ? null : place.region,
+      'status': settings.paused ? 'PAUSED' : 'ACTIVE',
+    }));
     return settings;
   }
 }
 
 final sellerRepositoryProvider = Provider<SellerRepository>((ref) {
   if (ref.watch(useMockDataProvider)) return MockSellerRepository();
-  return ApiSellerRepository(ref.watch(apiClientProvider));
+  return ApiSellerRepository(ref.watch(sessionApiClientProvider), ref.watch(tokenStorageProvider));
 });

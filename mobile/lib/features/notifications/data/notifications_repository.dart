@@ -2,96 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/data_source.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/network/endpoints/endpoints.dart';
 import '../../../core/utils/json.dart';
 import '../../catalog/data/catalog_mock_data.dart';
+import 'models/models.dart';
 
-enum NotificationContext {
-  purchase('PURCHASE'),
-  sale('SALE'),
-  system('SYSTEM');
-
-  const NotificationContext(this.apiName);
-
-  final String apiName;
-
-  static NotificationContext fromApi(Object? v) =>
-      NotificationContext.values.firstWhere((c) => c.apiName == v, orElse: () => NotificationContext.system);
-}
-
-/// `notifications.type` → icon and colors of the list row.
-enum NotificationType {
-  order('ORDER', 'truck', '#E8F1FA', '#2F6DA8'),
-  sale('SALE', 'store', '#F0F6E6', '#4A7A12'),
-  promo('PROMO', 'percent', '#FFF4E8', '#D86F12'),
-  message('MESSAGE', 'msg', '#F4F0E6', '#4A4A42'),
-  stock('STOCK', 'alert', '#FFF1E0', '#B4500A'),
-  review('REVIEW', 'starO', '#FFF4E8', '#D86F12'),
-  payout('PAYOUT', 'wallet', '#F0F6E6', '#4A7A12');
-
-  const NotificationType(this.apiName, this.icon, this.background, this.foreground);
-
-  final String apiName;
-  final String icon;
-  final String background;
-  final String foreground;
-
-  static NotificationType fromApi(Object? v) =>
-      NotificationType.values.firstWhere((t) => t.apiName == v, orElse: () => NotificationType.order);
-}
-
-class AppNotification {
-  const AppNotification({
-    required this.id,
-    required this.context,
-    required this.type,
-    required this.title,
-    required this.body,
-    required this.createdAt,
-    this.link,
-    this.readAt,
-    this.cta,
-  });
-
-  factory AppNotification.fromJson(JsonMap json) => AppNotification(
-        id: readString(json['id']),
-        context: NotificationContext.fromApi(json['context']),
-        type: NotificationType.fromApi(json['type']),
-        title: readString(json['title']),
-        body: readString(json['body']),
-        link: readStringOrNull(json['link']),
-        createdAt: readDate(json['createdAt']) ?? DateTime.now(),
-        readAt: readDate(json['readAt']),
-        cta: readStringOrNull(json['cta']),
-      );
-
-  final String id;
-  final NotificationContext context;
-  final NotificationType type;
-  final String title;
-  final String body;
-
-  /// In-app route (e.g. `/commandes/ord-24817-ra`).
-  final String? link;
-  final DateTime createdAt;
-  final DateTime? readAt;
-
-  /// Inline action label ("Confirmer", "Laisser un avis").
-  final String? cta;
-
-  bool get unread => readAt == null;
-
-  AppNotification markRead() => AppNotification(
-        id: id,
-        context: context,
-        type: type,
-        title: title,
-        body: body,
-        link: link,
-        createdAt: createdAt,
-        readAt: readAt ?? DateTime.now(),
-        cta: cta,
-      );
-}
+export 'models/models.dart';
 
 abstract class NotificationsRepository {
   Future<List<AppNotification>> getNotifications();
@@ -203,18 +119,18 @@ class ApiNotificationsRepository implements NotificationsRepository {
 
   @override
   Future<List<AppNotification>> getNotifications() async =>
-      (await _api.getList('/notifications')).map((e) => AppNotification.fromJson(readMap(e))).toList();
+      (await _api.getList(NotificationsEndpoints.notifications, query: {'size': 50})).map((e) => AppNotification.fromJson(readMap(e))).toList();
 
   @override
-  Future<void> markRead(String id) async => _api.post('/notifications/$id/read');
+  Future<void> markRead(String id) async => _api.post(NotificationsEndpoints.read(id));
 
   @override
-  Future<void> markAllRead() async => _api.post('/notifications/read-all');
+  Future<void> markAllRead() async => _api.post(NotificationsEndpoints.readAll);
 }
 
 final notificationsRepositoryProvider = Provider<NotificationsRepository>((ref) {
   if (ref.watch(useMockDataProvider)) return MockNotificationsRepository();
-  return ApiNotificationsRepository(ref.watch(apiClientProvider));
+  return ApiNotificationsRepository(ref.watch(sessionApiClientProvider));
 });
 
 class NotificationsController extends AsyncNotifier<List<AppNotification>> {

@@ -2,11 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/data_source.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/network/endpoints/endpoints.dart';
 import '../../../core/network/paginated.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/json.dart';
 import 'catalog_mock_data.dart';
-import 'catalog_models.dart';
+import 'models/models.dart';
 
 /// Public catalogue: categories, products, shops, search.
 abstract class CatalogRepository {
@@ -165,45 +166,64 @@ class ApiCatalogRepository implements CatalogRepository {
 
   final ApiClient _api;
 
+  /// Categories come without colors: reuse the look of the mockups (by slug).
   @override
-  Future<List<Category>> getCategories() async =>
-      (await _api.getList('/categories')).map((e) => Category.fromJson(readMap(e))).toList();
+  Future<List<Category>> getCategories() async {
+    final presets = {for (final c in CatalogMockData.categories) c.slug: c};
+    return (await _api.getList(CatalogEndpoints.categories)).map((e) {
+      final category = Category.fromJson(readMap(e));
+      final preset = presets[category.slug];
+      return preset == null ? category : category.withLook(preset);
+    }).toList();
+  }
 
+  Future<List<Product>> _list(Map<String, dynamic> query) async =>
+      (await _api.getList(CatalogEndpoints.products, query: query)).map((e) => Product.fromJson(readMap(e))).toList();
+
+  /// Distinct shops of [products], in order.
+  static List<Shop> _shopsOf(Iterable<dynamic> products) {
+    final shops = <String, Shop>{};
+    for (final p in products) {
+      final shop = readMap(readMap(p)['shop']);
+      if (shop.isNotEmpty) shops.putIfAbsent(readString(shop['id']), () => Shop.fromJson(shop));
+    }
+    return shops.values.toList();
+  }
+
+  /// The API has no promo sort nor shop listing: promotions and popular
+  /// shops are derived from the product lists.
   @override
   Future<HomeFeed> getHomeFeed() async {
-    Future<List<Product>> list(Map<String, dynamic> query) async =>
-        (await _api.getList('/products', query: query)).map((e) => Product.fromJson(readMap(e))).toList();
-
     final results = await Future.wait([
-      list({'sort': 'relevance', 'size': 4}),
-      list({'sort': 'promo', 'size': 6}),
-      list({'sort': 'newest', 'size': 6}),
-      list({'sort': 'popular', 'size': 3}),
+      _list({'sort': 'rating', 'size': 4}),
+      _list({'sort': 'newest', 'size': 6}),
+      _api.getList(CatalogEndpoints.products, query: {'sort': 'popular', 'size': 30}),
     ]);
-    final shops = (await _api.getList('/shops', query: {'sort': 'popular', 'size': 6}))
-        .map((e) => Shop.fromJson(readMap(e)))
-        .toList();
+    final popular = results[2];
+    final popularProducts = popular.map((e) => Product.fromJson(readMap(e))).toList();
+    final shops = _shopsOf(popular);
     return HomeFeed(
-      recommended: results[0],
-      promotions: results[1],
-      newArrivals: results[2],
-      popular: results[3],
-      popularShops: shops,
+      recommended: results[0].cast<Product>(),
+      promotions: popularProducts.where((p) => p.promo != null).take(6).toList(),
+      newArrivals: results[1].cast<Product>(),
+      popular: popularProducts.take(3).toList(),
+      popularShops: shops.take(6).toList(),
+      nearbyProducerCount: shops.length,
     );
   }
 
   @override
   Future<Paginated<Product>> getProducts(ProductQuery query, {int page = 0, int size = 6}) async {
-    final json = await _api.getMap('/products', query: query.toQueryParameters(page: page, size: size));
-    return Paginated<Product>.fromJson(json, Product.fromJson);
+    final json = await _api.getMap(CatalogEndpoints.products, query: query.toQueryParameters(page: page, size: size));
+    return Paginated<Product>.fromJson(json, (e) => Product.fromJson(readMap(e)));
   }
 
   @override
-  Future<Product> getProduct(String slug) async => Product.fromJson(await _api.getMap('/products/$slug'));
+  Future<Product> getProduct(String slug) async => Product.fromJson(await _api.getMap(CatalogEndpoints.product(slug)));
 
+  /// Product reviews are not exposed publicly by the API yet.
   @override
-  Future<List<Review>> getProductReviews(String productId) async =>
-      (await _api.getList('/products/$productId/reviews')).map((e) => Review.fromJson(readMap(e))).toList();
+  Future<List<Review>> getProductReviews(String productId) async => const [];
 
   @override
   Future<List<Product>> getSimilarProducts(Product product) async {
@@ -212,30 +232,23 @@ class ApiCatalogRepository implements CatalogRepository {
   }
 
   @override
-  Future<Shop> getShop(String slug) async => Shop.fromJson(await _api.getMap('/shops/$slug'));
+  Future<Shop> getShop(String slug) async => Shop.fromJson(await _api.getMap(CatalogEndpoints.shop(slug)));
 
   @override
   Future<List<Product>> getShopProducts(String slug) async =>
-      (await _api.getList('/shops/$slug/products')).map((e) => Product.fromJson(readMap(e))).toList();
+      (await _api.getList(CatalogEndpoints.shopProducts(slug))).map((e) => Product.fromJson(readMap(e))).toList();
 
   @override
-  Future<Review?> getShopLatestReview(String slug) async {
-    final shop = await getShop(slug);
-    final products = await getShopProducts(shop.slug);
-    if (products.isEmpty) return null;
-    final reviews = await getProductReviews(products.first.id);
-    return reviews.isEmpty ? null : reviews.first;
-  }
+  Future<Review?> getShopLatestReview(String slug) async => null;
 
   @override
   Future<List<SearchSuggestion>> getSuggestions(String q) async =>
-      (await _api.getList('/search/suggestions', query: {'q': q}))
-          .map((e) => SearchSuggestion.fromJson(readMap(e)))
-          .toList();
+      SearchSuggestion.listFromJson(await _api.getMap(CatalogEndpoints.searchSuggestions, query: {'q': q}));
 
+  /// Shops selling a product that matches [q].
   @override
   Future<List<Shop>> searchShops(String q) async =>
-      (await _api.getList('/shops', query: {'q': q, 'size': 3})).map((e) => Shop.fromJson(readMap(e))).toList();
+      _shopsOf(await _api.getList(CatalogEndpoints.products, query: {'q': q, 'size': 20})).take(3).toList();
 }
 
 final catalogRepositoryProvider = Provider<CatalogRepository>((ref) {

@@ -1,0 +1,9 @@
+targets:
+  $default:
+    builders:
+      json_serializable:
+        options:
+          # Nested models are serialized too, and `null` values are left out
+          # (the API treats a missing field as "unchanged").
+          explicit_to_json: true
+          include_if_null: false

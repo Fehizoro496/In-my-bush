@@ -8,8 +8,8 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../shared/widgets.dart';
 import '../../auth/auth_controller.dart';
-import '../data/account_models.dart';
 import '../data/account_repository.dart';
+import '../data/models/models.dart';
 
 /// M-Payments — payment methods (buyer) and payouts (seller).
 class PaymentsScreen extends ConsumerStatefulWidget {

@@ -1,6 +1,7 @@
-// Small, forgiving JSON readers used by the hand-written `fromJson`
-// factories (no code generation in this project).
-
+// JSON helpers. Models are (de)serialized by json_serializable (`*.g.dart`,
+// regenerate with `dart run build_runner build`) with the parse functions of
+// `parsers.dart`; the readers below are for the few places that read raw API
+// payloads.
 
 typedef JsonMap = Map<String, dynamic>;
 

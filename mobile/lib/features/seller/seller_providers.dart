@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../catalog/data/catalog_models.dart';
-import '../orders/data/order_models.dart';
-import 'data/seller_models.dart';
+import '../catalog/data/models/models.dart';
+import '../orders/data/models/models.dart';
+import 'data/models/models.dart';
 import 'data/seller_repository.dart';
 
 final sellerDashboardProvider = FutureProvider.autoDispose.family<SellerDashboard, SalesPeriod>(

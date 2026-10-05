@@ -9,7 +9,7 @@ import '../../../core/utils/formatters.dart';
 import '../../../shared/widgets.dart';
 import '../../favorites/favorites_providers.dart';
 import '../catalog_providers.dart';
-import '../data/catalog_models.dart';
+import '../data/models/models.dart';
 import 'widgets/product_tile.dart';
 
 /// M-Seller — public shop profile.

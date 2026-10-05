@@ -1,6 +1,7 @@
 import '../../../core/utils/formatters.dart';
+import '../../../shared/models/avatar_look.dart';
 import '../../../shared/models/visual.dart';
-import 'catalog_models.dart';
+import 'models/models.dart';
 
 /// Data of the mockups (M-Home, M-Product, M-Seller, M-Search, M-Categories,
 /// M-Favorites…). Shared by every mock repository.

@@ -2,60 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/data_source.dart';
 import '../../../core/network/dio_client.dart';
-import '../../../core/utils/json.dart';
-import '../../../shared/models/visual.dart';
-import '../../orders/data/order_models.dart';
+import '../../../core/network/endpoints/endpoints.dart';
+import '../../orders/data/models/models.dart';
 import '../../orders/data/orders_repository.dart';
+import 'models/models.dart';
 
-/// A product the buyer can review (delivered order line).
-class ReviewTarget {
-  const ReviewTarget({
-    required this.orderId,
-    required this.productId,
-    required this.productName,
-    required this.shopName,
-    required this.visual,
-    this.deliveredAt,
-  });
-
-  final String orderId;
-  final String productId;
-  final String productName;
-  final String shopName;
-  final Visual visual;
-  final DateTime? deliveredAt;
-}
-
-/// Buyer review form payload (`POST /me/orders/{id}/reviews`).
-class ReviewDraft {
-  const ReviewDraft({
-    required this.productId,
-    required this.rating,
-    this.comment = '',
-    this.tags = const {},
-    this.communicationRating,
-    this.preparationRating,
-    this.showName = true,
-  });
-
-  final String productId;
-  final int rating;
-  final String comment;
-  final Set<String> tags;
-  final int? communicationRating;
-  final int? preparationRating;
-  final bool showName;
-
-  JsonMap toJson() => compactJson({
-        'productId': productId,
-        'rating': rating,
-        'comment': comment,
-        'tags': tags.toList(),
-        'communicationRating': communicationRating,
-        'preparationRating': preparationRating,
-        'showName': showName,
-      });
-}
+export 'models/models.dart';
 
 abstract class ReviewsRepository {
   /// Products of an order that still need a review.
@@ -115,13 +67,13 @@ class ApiReviewsRepository implements ReviewsRepository {
 
   @override
   Future<void> submit(String orderId, ReviewDraft draft) async =>
-      _api.post('/me/orders/$orderId/reviews', body: draft.toJson());
+      _api.post(ReviewsEndpoints.orderReviews(orderId), body: draft.toJson());
 }
 
 final reviewsRepositoryProvider = Provider<ReviewsRepository>((ref) {
   final orders = ref.watch(ordersRepositoryProvider);
   if (ref.watch(useMockDataProvider)) return MockReviewsRepository(orders);
-  return ApiReviewsRepository(ref.watch(apiClientProvider), orders);
+  return ApiReviewsRepository(ref.watch(sessionApiClientProvider), orders);
 });
 
 final reviewTargetsProvider = FutureProvider.autoDispose.family<List<ReviewTarget>, String>(

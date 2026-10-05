@@ -10,7 +10,10 @@ void main() {
 
   testWidgets('App renders without crashing', (WidgetTester tester) async {
     await tester.pumpWidget(
-      const ProviderScope(child: InMyBushApp()),
+      ProviderScope(
+        overrides: [useMockDataProvider.overrideWithValue(true)],
+        child: const InMyBushApp(),
+      ),
     );
     // Let the mock repositories resolve so no timer outlives the test.
     await tester.pumpAndSettle();

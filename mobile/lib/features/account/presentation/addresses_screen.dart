@@ -5,8 +5,8 @@ import '../../../core/router/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets.dart';
-import '../data/account_models.dart';
 import '../data/account_repository.dart';
+import '../data/models/models.dart';
 
 /// M-Addresses — saved addresses + new address form.
 class AddressesScreen extends ConsumerStatefulWidget {
