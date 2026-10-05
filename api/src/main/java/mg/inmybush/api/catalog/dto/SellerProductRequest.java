@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
-import mg.inmybush.api.catalog.ProductUnit;
+import mg.inmybush.api.catalog.entity.ProductUnit;
 
 /** Create a product. With {@code submit=true} it goes straight to PENDING_REVIEW, otherwise it stays a DRAFT. */
 public record SellerProductRequest(

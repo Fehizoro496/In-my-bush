@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import mg.inmybush.api.catalog.ProductUnit;
-import mg.inmybush.api.catalog.StockStatus;
+import mg.inmybush.api.catalog.entity.ProductUnit;
+import mg.inmybush.api.catalog.entity.StockStatus;
 
 public record ProductDetailResponse(
     UUID id,

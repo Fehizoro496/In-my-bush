@@ -2,7 +2,7 @@ package mg.inmybush.api.catalog.dto;
 
 import java.math.BigDecimal;
 import java.util.UUID;
-import mg.inmybush.api.shop.Shop;
+import mg.inmybush.api.shop.entity.Shop;
 
 /** Compact shop info embedded in product cards, carts and orders. */
 public record ShopRef(UUID id, String slug, String name, String city, String region, String logoUrl, BigDecimal ratingAvg,

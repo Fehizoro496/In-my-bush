@@ -3,8 +3,8 @@ package mg.inmybush.api.shop.dto;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
-import mg.inmybush.api.shop.Shop;
-import mg.inmybush.api.shop.ShopStatus;
+import mg.inmybush.api.shop.entity.Shop;
+import mg.inmybush.api.shop.entity.ShopStatus;
 
 public record ShopResponse(
     UUID id,

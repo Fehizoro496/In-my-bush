@@ -3,10 +3,10 @@ package mg.inmybush.api.order.dto;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import mg.inmybush.api.order.DeliveryMode;
-import mg.inmybush.api.order.Order;
-import mg.inmybush.api.order.OrderStatus;
-import mg.inmybush.api.payment.PaymentStatus;
+import mg.inmybush.api.order.entity.DeliveryMode;
+import mg.inmybush.api.order.entity.Order;
+import mg.inmybush.api.order.entity.OrderStatus;
+import mg.inmybush.api.payment.entity.PaymentStatus;
 
 public record OrderResponse(
     UUID id,

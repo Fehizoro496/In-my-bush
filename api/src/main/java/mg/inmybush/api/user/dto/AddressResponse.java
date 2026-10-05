@@ -1,7 +1,7 @@
 package mg.inmybush.api.user.dto;
 
 import java.util.UUID;
-import mg.inmybush.api.user.Address;
+import mg.inmybush.api.user.entity.Address;
 
 public record AddressResponse(UUID id, String label, String recipient, String phone, String line1, String district,
                               String city, String landmark, boolean isDefault) {

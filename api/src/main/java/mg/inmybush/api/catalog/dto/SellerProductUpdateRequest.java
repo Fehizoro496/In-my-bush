@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
-import mg.inmybush.api.catalog.ProductUnit;
+import mg.inmybush.api.catalog.entity.ProductUnit;
 
 /**
  * PATCH semantics. Editing name, description, category or images of a published product sends it back to moderation;

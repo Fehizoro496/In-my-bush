@@ -1,7 +1,7 @@
 package mg.inmybush.api.shop.dto;
 
 import jakarta.validation.constraints.Size;
-import mg.inmybush.api.shop.ShopStatus;
+import mg.inmybush.api.shop.entity.ShopStatus;
 
 /** PATCH semantics. {@code status} accepts ACTIVE or PAUSED (holiday mode); SUSPENDED is admin-only. */
 public record UpdateShopRequest(

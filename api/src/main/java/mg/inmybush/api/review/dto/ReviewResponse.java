@@ -2,7 +2,7 @@ package mg.inmybush.api.review.dto;
 
 import java.time.Instant;
 import java.util.UUID;
-import mg.inmybush.api.review.Review;
+import mg.inmybush.api.review.entity.Review;
 
 public record ReviewResponse(
     UUID id,
