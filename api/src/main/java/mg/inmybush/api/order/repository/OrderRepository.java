@@ -18,7 +18,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     @EntityGraph(attributePaths = {"buyer", "shop", "items"})
     Page<Order> findByBuyerId(UUID buyerId, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"buyer", "shop", "items", "events"})
+    @EntityGraph(attributePaths = {"buyer", "shop", "items"})
     Optional<Order> findByIdAndBuyerId(UUID id, UUID buyerId);
 
     @EntityGraph(attributePaths = {"buyer", "shop", "items"})
@@ -27,7 +27,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     @EntityGraph(attributePaths = {"buyer", "shop", "items"})
     Page<Order> findByShopIdAndStatus(UUID shopId, OrderStatus status, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"buyer", "shop", "items", "events"})
+    @EntityGraph(attributePaths = {"buyer", "shop", "items"})
     Optional<Order> findByIdAndShopId(UUID id, UUID shopId);
 
     long countByStatus(OrderStatus status);
