@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import mg.inmybush.api.catalog.ProductStatus;
-import mg.inmybush.api.catalog.ProductUnit;
-import mg.inmybush.api.catalog.StockStatus;
+import mg.inmybush.api.catalog.entity.ProductStatus;
+import mg.inmybush.api.catalog.entity.ProductUnit;
+import mg.inmybush.api.catalog.entity.StockStatus;
 
 /** Seller / admin view of a product, including moderation status. */
 public record SellerProductResponse(

@@ -2,8 +2,8 @@ package mg.inmybush.api.notification.dto;
 
 import java.time.Instant;
 import java.util.UUID;
-import mg.inmybush.api.notification.Notification;
-import mg.inmybush.api.notification.NotificationContext;
+import mg.inmybush.api.notification.entity.Notification;
+import mg.inmybush.api.notification.entity.NotificationContext;
 
 public record NotificationResponse(
     UUID id,

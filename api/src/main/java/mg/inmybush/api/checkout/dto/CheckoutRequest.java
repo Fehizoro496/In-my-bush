@@ -3,8 +3,8 @@ package mg.inmybush.api.checkout.dto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.UUID;
-import mg.inmybush.api.order.DeliveryMode;
-import mg.inmybush.api.payment.PaymentMethod;
+import mg.inmybush.api.order.entity.DeliveryMode;
+import mg.inmybush.api.payment.entity.PaymentMethod;
 
 public record CheckoutRequest(
     @NotNull DeliveryMode deliveryMode,

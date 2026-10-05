@@ -1,7 +1,7 @@
 package mg.inmybush.api.order.dto;
 
 import java.util.UUID;
-import mg.inmybush.api.order.OrderItem;
+import mg.inmybush.api.order.entity.OrderItem;
 
 public record OrderItemResponse(
     UUID id,

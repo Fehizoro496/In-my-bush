@@ -2,9 +2,9 @@ package mg.inmybush.api.report.dto;
 
 import java.time.Instant;
 import java.util.UUID;
-import mg.inmybush.api.report.Report;
-import mg.inmybush.api.report.ReportStatus;
-import mg.inmybush.api.report.TargetType;
+import mg.inmybush.api.report.entity.Report;
+import mg.inmybush.api.report.entity.ReportStatus;
+import mg.inmybush.api.report.entity.TargetType;
 
 public record ReportResponse(
     UUID id,

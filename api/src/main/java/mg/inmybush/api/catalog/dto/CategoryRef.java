@@ -1,7 +1,7 @@
 package mg.inmybush.api.catalog.dto;
 
 import java.util.UUID;
-import mg.inmybush.api.catalog.Category;
+import mg.inmybush.api.catalog.entity.Category;
 
 public record CategoryRef(UUID id, String slug, String name) {
 

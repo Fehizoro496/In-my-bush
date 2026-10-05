@@ -3,9 +3,9 @@ package mg.inmybush.api.user.dto;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
-import mg.inmybush.api.user.Role;
-import mg.inmybush.api.user.User;
-import mg.inmybush.api.user.UserStatus;
+import mg.inmybush.api.user.entity.Role;
+import mg.inmybush.api.user.entity.User;
+import mg.inmybush.api.user.entity.UserStatus;
 
 public record UserResponse(
     UUID id,

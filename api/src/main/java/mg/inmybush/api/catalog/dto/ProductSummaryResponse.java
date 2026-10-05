@@ -2,8 +2,8 @@ package mg.inmybush.api.catalog.dto;
 
 import java.math.BigDecimal;
 import java.util.UUID;
-import mg.inmybush.api.catalog.ProductUnit;
-import mg.inmybush.api.catalog.StockStatus;
+import mg.inmybush.api.catalog.entity.ProductUnit;
+import mg.inmybush.api.catalog.entity.StockStatus;
 
 /** Product card. {@code discountPercent} is derived from compareAtPrice (promo badge). */
 public record ProductSummaryResponse(

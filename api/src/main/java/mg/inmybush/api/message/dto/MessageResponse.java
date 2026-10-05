@@ -2,7 +2,7 @@ package mg.inmybush.api.message.dto;
 
 import java.time.Instant;
 import java.util.UUID;
-import mg.inmybush.api.message.Message;
+import mg.inmybush.api.message.entity.Message;
 
 public record MessageResponse(
     UUID id,

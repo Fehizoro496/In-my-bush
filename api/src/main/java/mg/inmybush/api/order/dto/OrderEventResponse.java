@@ -1,8 +1,8 @@
 package mg.inmybush.api.order.dto;
 
 import java.time.Instant;
-import mg.inmybush.api.order.OrderEvent;
-import mg.inmybush.api.order.OrderStatus;
+import mg.inmybush.api.order.entity.OrderEvent;
+import mg.inmybush.api.order.entity.OrderStatus;
 
 public record OrderEventResponse(OrderStatus status, String note, Instant createdAt) {
 
