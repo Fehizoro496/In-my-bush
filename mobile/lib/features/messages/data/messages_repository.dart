@@ -2,126 +2,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/data_source.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/network/endpoints/endpoints.dart';
+import '../../../core/utils/formatters.dart';
 import '../../../core/utils/json.dart';
-import '../../../shared/models/visual.dart';
+import '../../../shared/models/avatar_look.dart';
+import '../../auth/auth_controller.dart';
 import '../../catalog/data/catalog_mock_data.dart';
+import 'models/models.dart';
 
-/// `PURCHASE` = "Mes achats" (J’achète), `SALE` = "Mes ventes" (Je vends).
-enum MessageContext {
-  purchase('PURCHASE'),
-  sale('SALE');
-
-  const MessageContext(this.apiName);
-
-  final String apiName;
-
-  static MessageContext fromApi(Object? v) => v == 'SALE' ? MessageContext.sale : MessageContext.purchase;
-}
-
-class Conversation {
-  const Conversation({
-    required this.id,
-    required this.context,
-    required this.title,
-    required this.avatar,
-    required this.subject,
-    required this.lastMessage,
-    required this.lastMessageAt,
-    this.subjectIcon = 'tag',
-    this.unreadCount = 0,
-    this.online = false,
-    this.orderId,
-    this.orderNumber,
-    this.orderSummary,
-    this.orderStatus,
-    this.shopSlug,
-    this.statusLine,
-  });
-
-  factory Conversation.fromJson(JsonMap json) {
-    final title = readString(json['title']);
-    return Conversation(
-      id: readString(json['id']),
-      context: MessageContext.fromApi(json['context']),
-      title: title,
-      avatar: json['avatar'] is Map
-          ? AvatarLook.fromJson(readMap(json['avatar']))
-          : AvatarLook(initials: title.isEmpty ? '?' : title.substring(0, 1).toUpperCase()),
-      subject: readString(json['subject']),
-      subjectIcon: readString(json['subjectIcon'], 'tag'),
-      lastMessage: readString(json['lastMessage']),
-      lastMessageAt: readDate(json['lastMessageAt']) ?? DateTime.now(),
-      unreadCount: readInt(json['unreadCount']),
-      online: readBool(json['online']),
-      orderId: readStringOrNull(json['orderId']),
-      orderNumber: readStringOrNull(json['orderNumber']),
-      orderSummary: readStringOrNull(json['orderSummary']),
-      orderStatus: readStringOrNull(json['orderStatus']),
-      shopSlug: readStringOrNull(json['shopSlug']),
-      statusLine: readStringOrNull(json['statusLine']),
-    );
-  }
-
-  final String id;
-  final MessageContext context;
-
-  /// Counterpart name.
-  final String title;
-  final AvatarLook avatar;
-
-  /// "Commande IMB-24817", "Savon au ravintsara"…
-  final String subject;
-  final String subjectIcon;
-  final String lastMessage;
-  final DateTime lastMessageAt;
-  final int unreadCount;
-  final bool online;
-  final String? orderId;
-  final String? orderNumber;
-  final String? orderSummary;
-  final String? orderStatus;
-  final String? shopSlug;
-
-  /// "En ligne · répond en ~1 h"
-  final String? statusLine;
-
-  Conversation copyWith({int? unreadCount, String? lastMessage, DateTime? lastMessageAt}) => Conversation(
-        id: id,
-        context: context,
-        title: title,
-        avatar: avatar,
-        subject: subject,
-        subjectIcon: subjectIcon,
-        lastMessage: lastMessage ?? this.lastMessage,
-        lastMessageAt: lastMessageAt ?? this.lastMessageAt,
-        unreadCount: unreadCount ?? this.unreadCount,
-        online: online,
-        orderId: orderId,
-        orderNumber: orderNumber,
-        orderSummary: orderSummary,
-        orderStatus: orderStatus,
-        shopSlug: shopSlug,
-        statusLine: statusLine,
-      );
-}
-
-class ChatMessage {
-  const ChatMessage({required this.id, required this.body, required this.mine, required this.createdAt, this.read = true});
-
-  factory ChatMessage.fromJson(JsonMap json, {required String myUserId}) => ChatMessage(
-        id: readString(json['id']),
-        body: readString(json['body']),
-        mine: readString(json['senderId']) == myUserId || readBool(json['mine']),
-        createdAt: readDate(json['createdAt']) ?? DateTime.now(),
-        read: json['readAt'] != null,
-      );
-
-  final String id;
-  final String body;
-  final bool mine;
-  final DateTime createdAt;
-  final bool read;
-}
+export 'models/models.dart';
 
 abstract class MessagesRepository {
   Future<List<Conversation>> getConversations(MessageContext context);
@@ -289,40 +178,55 @@ class ApiMessagesRepository implements MessagesRepository {
   final ApiClient _api;
   final String myUserId;
 
-  @override
-  Future<List<Conversation>> getConversations(MessageContext context) async =>
-      (await _api.getList('/conversations', query: {'context': context.apiName}))
-          .map((e) => Conversation.fromJson(readMap(e)))
-          .toList();
-
-  @override
-  Future<Conversation> getConversation(String id) async {
-    for (final context in MessageContext.values) {
-      final list = await getConversations(context);
-      for (final c in list) {
-        if (c.id == id) return c;
-      }
-    }
-    throw StateError('Conversation introuvable');
+  /// `{ buyerId, shopName, buyerName, orderId, productId, lastMessagePreview… }`:
+  /// the side (purchase / sale) and the counterpart are deduced from the buyer.
+  Conversation _conversation(JsonMap json) {
+    final purchase = readString(json['buyerId']) == myUserId;
+    final title = readString(purchase ? json['shopName'] : json['buyerName']);
+    final orderId = readStringOrNull(json['orderId']);
+    return Conversation(
+      id: readString(json['id']),
+      context: purchase ? MessageContext.purchase : MessageContext.sale,
+      title: title,
+      avatar: AvatarLook(initials: initialsOf(title)),
+      subject: orderId != null ? 'Commande' : 'Question sur un produit',
+      subjectIcon: orderId != null ? 'package' : 'tag',
+      lastMessage: readString(json['lastMessagePreview']),
+      lastMessageAt: readDate(json['lastMessageAt']) ?? readDate(json['createdAt']) ?? DateTime.now(),
+      orderId: orderId,
+    );
   }
 
+  Future<List<Conversation>> _all() async =>
+      (await _api.getList(MessagesEndpoints.conversations, query: {'size': 50})).map((e) => _conversation(readMap(e))).toList();
+
+  @override
+  Future<List<Conversation>> getConversations(MessageContext context) async =>
+      (await _all()).where((c) => c.context == context).toList();
+
+  @override
+  Future<Conversation> getConversation(String id) async =>
+      (await _all()).firstWhere((c) => c.id == id, orElse: () => throw StateError('Conversation introuvable'));
+
+  /// The API pages messages newest first; the chat shows them oldest first.
   @override
   Future<List<ChatMessage>> getMessages(String conversationId) async =>
-      (await _api.getList('/conversations/$conversationId/messages'))
-          .map((e) => ChatMessage.fromJson(readMap(e), myUserId: myUserId))
+      (await _api.getList(MessagesEndpoints.messages(conversationId), query: {'size': 50}))
+          .map((e) => ChatMessage.fromJson(readMap(e)).sentBy(myUserId))
+          .toList()
+          .reversed
           .toList();
 
   @override
-  Future<ChatMessage> send(String conversationId, String body) async => ChatMessage.fromJson(
-        readMap(await _api.post('/conversations/$conversationId/messages', body: {'body': body})),
-        myUserId: myUserId,
-      );
+  Future<ChatMessage> send(String conversationId, String body) async =>
+      ChatMessage.fromJson(readMap(await _api.post(MessagesEndpoints.messages(conversationId), body: {'body': body})))
+          .sentBy(myUserId);
 
   @override
-  Future<void> markRead(String conversationId) async => _api.post('/conversations/$conversationId/read');
+  Future<void> markRead(String conversationId) async => _api.post(MessagesEndpoints.read(conversationId));
 }
 
 final messagesRepositoryProvider = Provider<MessagesRepository>((ref) {
   if (ref.watch(useMockDataProvider)) return MockMessagesRepository();
-  return ApiMessagesRepository(ref.watch(apiClientProvider));
+  return ApiMessagesRepository(ref.watch(sessionApiClientProvider), myUserId: ref.watch(currentUserProvider)?.id ?? '');
 });

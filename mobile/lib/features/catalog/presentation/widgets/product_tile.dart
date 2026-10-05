@@ -6,7 +6,7 @@ import '../../../../core/router/route_names.dart';
 import '../../../../shared/widgets.dart';
 import '../../../cart/cart_providers.dart';
 import '../../../favorites/favorites_providers.dart';
-import '../../data/catalog_models.dart';
+import '../../data/models/models.dart';
 
 /// [ProductCard] wired to favorites, cart and navigation.
 class ProductTile extends ConsumerWidget {

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../utils/json.dart';
+import 'endpoints/endpoints.dart';
 import 'token_storage.dart';
 
 /// Adds `Authorization: Bearer <access>` to every request and, on a 401,
@@ -33,7 +34,7 @@ class AuthInterceptor extends QueuedInterceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     final options = err.requestOptions;
-    final isAuthCall = options.path.contains('/auth/');
+    final isAuthCall = options.path.contains(AuthEndpoints.prefix);
     if (err.response?.statusCode != 401 || isAuthCall || options.extra[_retriedKey] == true) {
       handler.next(err);
       return;
@@ -53,7 +54,7 @@ class AuthInterceptor extends QueuedInterceptor {
         receiveTimeout: _dio.options.receiveTimeout,
       ));
       final response = await refreshDio.post<dynamic>(
-        '/auth/refresh',
+        AuthEndpoints.refresh,
         data: {'refreshToken': refreshToken},
       );
       final body = readMap(response.data);

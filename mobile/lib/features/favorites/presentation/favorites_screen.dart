@@ -6,7 +6,7 @@ import '../../../core/router/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets.dart';
-import '../../catalog/data/catalog_models.dart';
+import '../../catalog/data/models/models.dart';
 import '../../catalog/presentation/widgets/product_tile.dart';
 import '../favorites_providers.dart';
 

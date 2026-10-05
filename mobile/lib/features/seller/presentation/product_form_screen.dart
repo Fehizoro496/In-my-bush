@@ -8,8 +8,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../shared/widgets.dart';
-import '../../catalog/data/catalog_models.dart';
-import '../data/seller_models.dart';
+import '../../catalog/data/models/models.dart';
+import '../data/models/models.dart';
 import '../seller_providers.dart';
 
 const _units = ['Botte', 'Kg', 'Pièce', 'Pot', 'Barquette', 'Litre', 'Lot', 'Panier'];

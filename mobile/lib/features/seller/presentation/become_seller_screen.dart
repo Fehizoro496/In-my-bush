@@ -39,13 +39,13 @@ class _BecomeSellerScreenState extends ConsumerState<BecomeSellerScreen> {
   Future<void> _continue() async {
     if (_step == 2) {
       setState(() => _saving = true);
-      await ref.read(sellerRepositoryProvider).openShop(
+      final shop = await ref.read(sellerRepositoryProvider).openShop(
             name: _name.text.trim(),
             location: _location.text.trim(),
             description: _description.text.trim(),
             kinds: _kinds,
           );
-      ref.read(authControllerProvider.notifier).becameSeller(_name.text.trim());
+      ref.read(authControllerProvider.notifier).becameSeller(_name.text.trim(), shopSlug: shop.slug);
       if (!mounted) return;
       setState(() => _saving = false);
     }

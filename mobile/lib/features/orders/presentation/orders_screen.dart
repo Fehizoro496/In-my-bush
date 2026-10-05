@@ -8,8 +8,8 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../shared/widgets.dart';
 import '../../cart/cart_providers.dart';
-import '../../catalog/data/catalog_mock_data.dart';
-import '../data/order_models.dart';
+import '../../catalog/data/catalog_repository.dart';
+import '../data/models/models.dart';
 import '../data/orders_repository.dart';
 
 /// M-Orders — "Mes commandes".
@@ -97,9 +97,14 @@ class _PurchaseCard extends ConsumerWidget {
 
   Future<void> _reorder(BuildContext context, WidgetRef ref) async {
     final cart = ref.read(cartControllerProvider.notifier);
+    final catalog = ref.read(catalogRepositoryProvider);
     for (final item in purchase.items) {
-      final product = CatalogMockData.productBySlug(item.productId.replaceFirst('prd-', ''));
-      if (product != null) await cart.add(product, quantity: item.quantity);
+      final slug = item.productSlug.isNotEmpty ? item.productSlug : item.productId.replaceFirst('prd-', '');
+      try {
+        await cart.add(await catalog.getProduct(slug), quantity: item.quantity);
+      } catch (_) {
+        // Product no longer on sale: skip it.
+      }
     }
     if (context.mounted) context.push(AppRoutes.cart);
   }

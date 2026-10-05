@@ -11,7 +11,7 @@ import '../../../core/utils/formatters.dart';
 import '../../../shared/widgets.dart';
 import '../../cart/presentation/widgets/cart_icon_button.dart';
 import '../catalog_providers.dart';
-import '../data/catalog_models.dart';
+import '../data/models/models.dart';
 import 'widgets/product_tile.dart';
 
 /// M-Home — home + catalogue ("Explorer" merged in).

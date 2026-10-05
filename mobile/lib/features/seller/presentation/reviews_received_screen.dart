@@ -6,7 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../shared/widgets.dart';
-import '../../catalog/data/catalog_models.dart' show Review;
+import '../../catalog/data/models/models.dart' show Review;
 import '../seller_providers.dart';
 
 /// M-Sell-Reviews — reviews received by the seller, with inline reply.

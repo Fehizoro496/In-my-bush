@@ -10,7 +10,7 @@ import '../../auth/auth_controller.dart';
 import '../../cart/cart_providers.dart';
 import '../../favorites/favorites_providers.dart';
 import '../../messages/messages_providers.dart';
-import '../../orders/data/order_models.dart';
+import '../../orders/data/models/models.dart';
 import '../../orders/data/orders_repository.dart';
 import '../../seller/seller_providers.dart';
 

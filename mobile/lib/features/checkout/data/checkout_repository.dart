@@ -2,64 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/data_source.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/network/endpoints/endpoints.dart';
 import '../../../core/utils/json.dart';
-import '../../../shared/models/visual.dart';
-import '../../cart/data/cart_models.dart';
-import '../../orders/data/order_models.dart';
+import '../../../shared/models/avatar_look.dart';
+import '../../cart/data/models/models.dart';
+import '../../orders/data/models/models.dart';
+import 'models/models.dart';
 
-class CheckoutRequest {
-  const CheckoutRequest({
-    required this.addressId,
-    required this.deliveryMode,
-    required this.slot,
-    required this.paymentMethod,
-    this.phone,
-    this.promoCode,
-  });
-
-  final String addressId;
-  final DeliveryMode deliveryMode;
-  final String slot;
-  final PaymentMethod paymentMethod;
-  final String? phone;
-  final String? promoCode;
-
-  JsonMap toJson() => compactJson({
-        'addressId': addressId,
-        'deliveryMode': deliveryMode.apiName,
-        'deliverySlot': slot,
-        'payment': compactJson({'method': paymentMethod.apiName, 'phone': phone}),
-        'promoCode': promoCode,
-      });
-}
-
-/// One shop's part of the confirmed checkout (confirmation screen).
-class CheckoutDelivery {
-  const CheckoutDelivery({required this.shopName, required this.avatar, required this.itemsSummary, required this.when});
-
-  final String shopName;
-  final AvatarLook avatar;
-  final String itemsSummary;
-  final String when;
-}
-
-class CheckoutResult {
-  const CheckoutResult({
-    required this.checkoutId,
-    required this.orderNumber,
-    required this.total,
-    required this.paymentMethod,
-    required this.deliveries,
-    this.firstOrderId,
-  });
-
-  final String checkoutId;
-  final String orderNumber;
-  final int total;
-  final PaymentMethod paymentMethod;
-  final List<CheckoutDelivery> deliveries;
-  final String? firstOrderId;
-}
+export 'models/models.dart';
 
 abstract class CheckoutRepository {
   Future<CheckoutResult> checkout(CheckoutRequest request, Cart cart);
@@ -109,11 +59,14 @@ class ApiCheckoutRepository implements CheckoutRepository {
 
   @override
   Future<CheckoutResult> checkout(CheckoutRequest request, Cart cart) async {
-    final json = readMap(await _api.post('/checkouts', body: request.toJson()));
-    final orders = readList(json['orders'], Order.fromJson);
+    // `{ checkoutId, orderIds, total }`: one order per shop.
+    final json = readMap(await _api.post(CheckoutEndpoints.checkouts, body: request.toJson()));
+    final orders = await Future.wait([
+      for (final id in readStringList(json['orderIds'])) _api.getMap(OrdersEndpoints.order(id)).then(Order.fromJson),
+    ]);
     return CheckoutResult(
-      checkoutId: readString(json['id']),
-      orderNumber: orders.isEmpty ? readString(json['number']) : orders.first.number,
+      checkoutId: readString(json['checkoutId']),
+      orderNumber: orders.isEmpty ? '' : orders.first.number,
       firstOrderId: orders.isEmpty ? null : orders.first.id,
       total: readInt(json['total']),
       paymentMethod: request.paymentMethod,
@@ -132,7 +85,7 @@ class ApiCheckoutRepository implements CheckoutRepository {
 
 final checkoutRepositoryProvider = Provider<CheckoutRepository>((ref) {
   if (ref.watch(useMockDataProvider)) return MockCheckoutRepository();
-  return ApiCheckoutRepository(ref.watch(apiClientProvider));
+  return ApiCheckoutRepository(ref.watch(sessionApiClientProvider));
 });
 
 /// Result of the last successful checkout (read by the confirmation screen).

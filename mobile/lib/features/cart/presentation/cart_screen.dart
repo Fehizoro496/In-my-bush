@@ -9,7 +9,7 @@ import '../../../core/utils/formatters.dart';
 import '../../../shared/widgets.dart';
 import '../../catalog/data/catalog_mock_data.dart';
 import '../cart_providers.dart';
-import '../data/cart_models.dart';
+import '../data/models/models.dart';
 
 /// M-Cart — pushed from the cart icon of the top bar.
 class CartScreen extends ConsumerStatefulWidget {

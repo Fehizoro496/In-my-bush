@@ -1,8 +1,14 @@
 import 'dart:math' as math;
 
+import 'package:json_annotation/json_annotation.dart';
+
 import '../utils/json.dart';
+import '../utils/parsers.dart';
+
+part 'paginated.g.dart';
 
 /// `{ items, page, size, totalItems, totalPages }` from the API.
+@JsonSerializable(genericArgumentFactories: true, createToJson: false)
 class Paginated<T> {
   const Paginated({
     required this.items,
@@ -12,16 +18,7 @@ class Paginated<T> {
     this.totalPages = 1,
   });
 
-  factory Paginated.fromJson(JsonMap json, T Function(JsonMap json) itemFromJson) {
-    final items = readList(json['items'], itemFromJson);
-    return Paginated<T>(
-      items: items,
-      page: readInt(json['page']),
-      size: readInt(json['size'], 20),
-      totalItems: readInt(json['totalItems'], items.length),
-      totalPages: readInt(json['totalPages'], 1),
-    );
-  }
+  factory Paginated.fromJson(JsonMap json, T Function(Object? json) fromJsonT) => _$PaginatedFromJson(json, fromJsonT);
 
   /// Local pagination (used by the mock repositories).
   factory Paginated.slice(List<T> all, {int page = 0, int size = 20}) {
@@ -37,9 +34,13 @@ class Paginated<T> {
   }
 
   final List<T> items;
+  @JsonKey(fromJson: parseInt)
   final int page;
+  @JsonKey(fromJson: parseInt)
   final int size;
+  @JsonKey(fromJson: parseInt)
   final int totalItems;
+  @JsonKey(fromJson: parseInt)
   final int totalPages;
 
   bool get hasMore => page + 1 < totalPages;

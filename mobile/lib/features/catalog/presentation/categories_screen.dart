@@ -7,7 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets.dart';
 import '../catalog_providers.dart';
-import '../data/catalog_models.dart';
+import '../data/models/models.dart';
 
 /// M-Categories.
 class CategoriesScreen extends ConsumerWidget {
