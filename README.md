@@ -24,9 +24,48 @@ cd web && cp .env.example .env.local && npm install && npm run dev
 
 # 4. Mobile
 cd mobile && flutter pub get && flutter run
+```
 
-# Mobile : après toute modification d'un modèle (@JsonSerializable), régénérer les *.g.dart
-cd mobile && dart run build_runner build ---delete-conflicting-outputs
+## Commandes utiles
+
+### API (depuis `api/`)
+
+```bash
+# Lancer avec les données de test (comptes, boutiques, produits, commandes)
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+
+# Vider la base : supprime toutes les tables. Arrêter l'API avant ;
+# au démarrage suivant, Flyway recrée le schéma (et les données de test avec le profil dev)
+./mvnw initialize -PresetDb
+
+# Vider une autre base que la base locale
+./mvnw initialize -PresetDb -Ddb.url=jdbc:postgresql://hote:5432/base -Ddb.user=utilisateur -Ddb.password=motdepasse
+
+# État des migrations Flyway (lecture seule)
+./mvnw -PresetDb flyway:info
+```
+
+Réglages locaux et secrets : copier `api/.env.example` vers `api/.env` (ignoré par git), lu au démarrage depuis `api/`.
+
+| Variable | Rôle |
+|---|---|
+| `MMSDUCK_API_KEY` | Clé de l'API SMS [MMSDuck](https://mmsduck.com/documentation) (codes d'inscription) : `mmsduck_test_…` en bac à sable, `mmsduck_live_…` en production. Vide : les SMS sont écrits dans les logs au lieu d'être envoyés. |
+| `OTP_EXPOSE_CODE` | `true` : l'API renvoie le code dans sa réponse, pour tester sans SMS. À ne jamais activer en production. |
+
+### Mobile (depuis `mobile/`)
+
+```bash
+# Après toute modification d'un modèle (@JsonSerializable), régénérer les *.g.dart
+dart run build_runner build
+
+# Sur un téléphone physique : pointer vers l'IP du PC sur le réseau local (10.0.2.2 ne marche que sur l'émulateur)
+flutter run --dart-define=API_URL=http://<IP-du-PC>:8080/api/v1
+
+# Sans backend, avec les données de maquette
+flutter run --dart-define=USE_MOCK=true
+
+# Analyse statique et tests
+flutter analyze && flutter test
 ```
 
 Voir [`docs/architecture.md`](docs/architecture.md) pour le découpage, les routes de chaque app, le modèle de données et la liste des endpoints.
