@@ -20,7 +20,6 @@ class SettingsPrefs {
     this.promotions = false,
     this.sms = true,
     this.shopPaused = false,
-    this.twoFactor = true,
   });
 
   final bool orderUpdates;
@@ -28,16 +27,14 @@ class SettingsPrefs {
   final bool promotions;
   final bool sms;
   final bool shopPaused;
-  final bool twoFactor;
 
-  SettingsPrefs copyWith({bool? orderUpdates, bool? messages, bool? promotions, bool? sms, bool? shopPaused, bool? twoFactor}) =>
+  SettingsPrefs copyWith({bool? orderUpdates, bool? messages, bool? promotions, bool? sms, bool? shopPaused}) =>
       SettingsPrefs(
         orderUpdates: orderUpdates ?? this.orderUpdates,
         messages: messages ?? this.messages,
         promotions: promotions ?? this.promotions,
         sms: sms ?? this.sms,
         shopPaused: shopPaused ?? this.shopPaused,
-        twoFactor: twoFactor ?? this.twoFactor,
       );
 }
 
@@ -212,14 +209,7 @@ class SettingsScreen extends ConsumerWidget {
                   icon: AppIcons.lock,
                   title: 'Mot de passe',
                   value: 'Modifier',
-                  onTap: () => showAppToast(context, 'Un code de réinitialisation vous a été envoyé par SMS', icon: AppIcons.lock),
-                ),
-                SettingsSwitchTile(
-                  icon: AppIcons.shield,
-                  title: 'Validation en 2 étapes',
-                  subtitle: 'Code SMS à la connexion',
-                  value: prefs.twoFactor,
-                  onChanged: (v) => update(prefs.copyWith(twoFactor: v)),
+                  onTap: () => showAppToast(context, 'La modification du mot de passe arrive bientôt', icon: AppIcons.lock),
                 ),
                 const SettingsTile(icon: AppIcons.info, title: 'Langue', value: 'Français'),
                 const SettingsTile(icon: AppIcons.wallet, title: 'Devise', value: 'Ariary (Ar)'),

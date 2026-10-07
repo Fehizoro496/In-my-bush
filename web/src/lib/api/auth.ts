@@ -1,4 +1,4 @@
-/** auth — POST /auth/register · /auth/login · /auth/refresh · /auth/logout · /auth/otp/request · /auth/otp/verify */
+/** auth — POST /auth/register/otp · /auth/register · /auth/login · /auth/refresh · /auth/logout */
 import type { AuthTokens, User } from "@/lib/types";
 import { apiFetch } from "./client";
 
@@ -8,9 +8,14 @@ export interface RegisterInput {
   phone: string;
   email?: string;
   password: string;
+  /** 6-digit code texted by `requestRegistrationOtp`. */
+  otpCode: string;
 }
 
 export const authApi = {
+  /** Sign-up, step 1: texts a 6-digit code to the phone number. */
+  requestRegistrationOtp: (phone: string) =>
+    apiFetch<{ phone: string; expiresAt: string }>("/auth/register/otp", { method: "POST", body: { phone }, token: null }),
   register: (input: RegisterInput) =>
     apiFetch<{ user: User; tokens: AuthTokens }>("/auth/register", { method: "POST", body: input, token: null }),
   login: (identifier: string, password: string) =>
@@ -18,7 +23,4 @@ export const authApi = {
   refresh: (refreshToken: string) =>
     apiFetch<AuthTokens>("/auth/refresh", { method: "POST", body: { refreshToken }, token: null }),
   logout: (refreshToken: string) => apiFetch<void>("/auth/logout", { method: "POST", body: { refreshToken } }),
-  requestOtp: (phone: string) => apiFetch<void>("/auth/otp/request", { method: "POST", body: { phone }, token: null }),
-  verifyOtp: (phone: string, code: string) =>
-    apiFetch<{ user: User; tokens: AuthTokens }>("/auth/otp/verify", { method: "POST", body: { phone, code }, token: null }),
 };

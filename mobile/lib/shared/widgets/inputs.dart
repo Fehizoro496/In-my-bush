@@ -91,16 +91,38 @@ class AppTextField extends StatefulWidget {
 }
 
 class _AppTextFieldState extends State<AppTextField> {
-  late final FocusNode _focusNode = widget.focusNode ?? FocusNode();
-  late final TextEditingController _controller =
-      widget.controller ?? TextEditingController(text: widget.initialValue);
+  // Created only when the widget does not provide its own.
+  FocusNode? _ownFocusNode;
+  TextEditingController? _ownController;
   bool _focused = false;
+
+  FocusNode get _focusNode => widget.focusNode ?? (_ownFocusNode ??= FocusNode());
+
+  TextEditingController get _controller =>
+      widget.controller ?? (_ownController ??= TextEditingController(text: widget.initialValue));
 
   @override
   void initState() {
     super.initState();
     _focusNode.addListener(_handleFocus);
     if (widget.showCounter) _controller.addListener(_handleText);
+  }
+
+  /// This state can be reused for another field (e.g. when a field is
+  /// inserted before it): follow the controller and focus node of the new
+  /// widget instead of keeping the previous ones.
+  @override
+  void didUpdateWidget(AppTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.focusNode != widget.focusNode) {
+      (oldWidget.focusNode ?? _ownFocusNode)?.removeListener(_handleFocus);
+      _focusNode.addListener(_handleFocus);
+      _focused = _focusNode.hasFocus;
+    }
+    if (oldWidget.controller != widget.controller || oldWidget.showCounter != widget.showCounter) {
+      (oldWidget.controller ?? _ownController)?.removeListener(_handleText);
+      if (widget.showCounter) _controller.addListener(_handleText);
+    }
   }
 
   void _handleFocus() => setState(() => _focused = _focusNode.hasFocus);
@@ -110,9 +132,9 @@ class _AppTextFieldState extends State<AppTextField> {
   @override
   void dispose() {
     _focusNode.removeListener(_handleFocus);
-    if (widget.showCounter) _controller.removeListener(_handleText);
-    if (widget.focusNode == null) _focusNode.dispose();
-    if (widget.controller == null) _controller.dispose();
+    _controller.removeListener(_handleText);
+    _ownFocusNode?.dispose();
+    _ownController?.dispose();
     super.dispose();
   }
 

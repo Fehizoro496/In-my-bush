@@ -92,6 +92,7 @@ public class User extends BaseEntity {
 
     public void markPhoneVerified() { this.phoneVerifiedAt = Instant.now(); }
 
+
     public Set<Role> getRoles() {
         return roles.isEmpty() ? EnumSet.noneOf(Role.class) : EnumSet.copyOf(roles);
     }

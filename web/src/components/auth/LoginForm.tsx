@@ -59,14 +59,6 @@ export function LoginForm({ next }: { next?: string }) {
       <Button type="submit" size="lg" className="h-[54px]">
         {login ? "Se connecter" : "Créer mon compte"}
       </Button>
-      <div className="flex items-center gap-3 text-[13px] text-muted">
-        <span className="h-px flex-1 bg-line-strong" />
-        ou
-        <span className="h-px flex-1 bg-line-strong" />
-      </div>
-      <Button variant="neutral" size="lg" icon="msg" className="text-[15px]">
-        Recevoir un code par SMS
-      </Button>
       <p className="m-0 text-center text-[13px] leading-[19px] text-muted">
         En continuant, vous acceptez les <a href="#">conditions d’utilisation</a> et la <a href="#">politique de confidentialité</a>.
       </p>

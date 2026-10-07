@@ -145,7 +145,7 @@ Auth par **JWT** (access token court + refresh token). Réponses JSON, erreurs a
 
 | Module | Endpoints |
 |---|---|
-| auth | `POST /auth/register` · `POST /auth/login` · `POST /auth/refresh` · `POST /auth/logout` · `POST /auth/otp/request` · `POST /auth/otp/verify` |
+| auth | `POST /auth/register/otp` · `POST /auth/register` · `POST /auth/login` · `POST /auth/refresh` · `POST /auth/logout` |
 | me | `GET/PATCH /me` · `GET/POST/PATCH/DELETE /me/addresses[/{id}]` · `GET/POST/DELETE /me/payout-methods[/{id}]` |
 | catalogue | `GET /categories` · `GET /products` (q, category, region, minPrice, maxPrice, sort) · `GET /products/{slug}` · `GET /products/{id}/reviews` · `GET /shops/{slug}` · `GET /shops/{slug}/products` · `GET /search/suggestions?q=` |
 | favoris | `GET /me/favorites` · `PUT /me/favorites/{productId}` · `DELETE /me/favorites/{productId}` |

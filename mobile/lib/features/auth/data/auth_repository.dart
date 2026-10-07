@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/network/api_exception.dart';
 import '../../../core/network/data_source.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/network/endpoints/endpoints.dart';
@@ -15,11 +14,16 @@ abstract class AuthRepository {
 
   Future<AppUser> login({required String phone, required String password});
 
-  Future<AppUser> register({required String fullName, required String phone, required String password});
+  /// Sign-up, step 1: texts a 6-digit code to [phone].
+  Future<void> requestRegistrationCode(String phone);
 
-  Future<void> requestOtp(String phone);
-
-  Future<AppUser> verifyOtp({required String phone, required String code});
+  /// Sign-up, step 2: creates the account with the [code] received by SMS.
+  Future<AppUser> register({
+    required String fullName,
+    required String phone,
+    required String password,
+    required String code,
+  });
 
   Future<void> logout();
 }
@@ -43,7 +47,15 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AppUser> register({required String fullName, required String phone, required String password}) async {
+  Future<void> requestRegistrationCode(String phone) => MockLatency.wait();
+
+  @override
+  Future<AppUser> register({
+    required String fullName,
+    required String phone,
+    required String password,
+    required String code,
+  }) async {
     await MockLatency.wait();
     final parts = fullName.trim().split(RegExp(r'\s+'));
     return AppUser(
@@ -53,15 +65,6 @@ class MockAuthRepository implements AuthRepository {
       phone: normalizePhone(phone),
       createdAt: DateTime.now(),
     );
-  }
-
-  @override
-  Future<void> requestOtp(String phone) => MockLatency.wait();
-
-  @override
-  Future<AppUser> verifyOtp({required String phone, required String code}) async {
-    await MockLatency.wait();
-    return AccountMockData.hery;
   }
 
   @override
@@ -100,27 +103,24 @@ class ApiAuthRepository implements AuthRepository {
       _session(await _api.post(AuthEndpoints.login, body: {'identifier': normalizePhone(phone), 'password': password}));
 
   @override
-  Future<AppUser> register({required String fullName, required String phone, required String password}) async {
+  Future<void> requestRegistrationCode(String phone) async =>
+      _api.post(AuthEndpoints.registerOtp, body: {'phone': normalizePhone(phone)});
+
+  @override
+  Future<AppUser> register({
+    required String fullName,
+    required String phone,
+    required String password,
+    required String code,
+  }) async {
     final parts = fullName.trim().split(RegExp(r'\s+'));
     return _session(await _api.post(AuthEndpoints.register, body: {
       'firstName': parts.first,
       'lastName': parts.skip(1).join(' '),
       'phone': normalizePhone(phone),
       'password': password,
+      'otpCode': code,
     }));
-  }
-
-  @override
-  Future<void> requestOtp(String phone) async => _api.post(AuthEndpoints.otpRequest, body: {'phone': normalizePhone(phone)});
-
-  @override
-  Future<AppUser> verifyOtp({required String phone, required String code}) async {
-    final json = readMap(await _api.post(AuthEndpoints.otpVerify, body: {'phone': normalizePhone(phone), 'code': code}));
-    // `auth` is only present when an account already exists for this phone.
-    if (json['auth'] is! Map) {
-      throw const ApiException(title: 'Compte introuvable', detail: 'Aucun compte n’est associé à ce numéro.');
-    }
-    return _session(json['auth']);
   }
 
   @override
