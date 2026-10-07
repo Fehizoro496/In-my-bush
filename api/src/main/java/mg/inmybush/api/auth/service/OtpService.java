@@ -13,7 +13,12 @@ import mg.inmybush.api.config.AppProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** 6-digit one-time codes sent by SMS (stubbed). Codes are hashed, expire, and lock after 5 wrong attempts. */
+/**
+ * 6-digit one-time codes sent by SMS. Codes are hashed, expire, and lock after 5 wrong attempts.
+ *
+ * <p>Used to verify the phone number at registration; also the building block of a future two-factor
+ * authentication.
+ */
 @Service
 public class OtpService {
 
@@ -42,7 +47,7 @@ public class OtpService {
         String code = TokenHasher.randomDigits(6);
         Instant expiresAt = now.plus(props.ttl());
         codes.save(new OtpCode(phone, hash(phone, code), expiresAt));
-        smsSender.send(phone, "Votre code In my bush : " + code + ". Il expire dans " + props.ttl().toMinutes() + " min.");
+        smsSender.send(phone, "Votre code de verification : " + code + ". Valable " + props.ttl().toMinutes() + " min.");
         return new OtpRequestResponse(phone, expiresAt, props.exposeCode() ? code : null);
     }
 

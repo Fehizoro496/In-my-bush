@@ -8,8 +8,6 @@ import mg.inmybush.api.auth.dto.AuthResponse;
 import mg.inmybush.api.auth.dto.LoginRequest;
 import mg.inmybush.api.auth.dto.OtpRequest;
 import mg.inmybush.api.auth.dto.OtpRequestResponse;
-import mg.inmybush.api.auth.dto.OtpVerifyRequest;
-import mg.inmybush.api.auth.dto.OtpVerifyResponse;
 import mg.inmybush.api.auth.dto.RefreshRequest;
 import mg.inmybush.api.auth.dto.RegisterRequest;
 import mg.inmybush.api.auth.service.AuthService;
@@ -22,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/auth")
-@Tag(name = "Auth", description = "Inscription, connexion, jetons et OTP")
+@Tag(name = "Auth", description = "Inscription, connexion et jetons")
 @SecurityRequirements
 public class AuthController {
 
@@ -32,9 +30,16 @@ public class AuthController {
         this.authService = authService;
     }
 
+    @PostMapping("/register/otp")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @Operation(summary = "Inscription, étape 1 : envoyer un code à 6 chiffres par SMS au numéro à vérifier")
+    public OtpRequestResponse requestRegistrationOtp(@Valid @RequestBody OtpRequest request) {
+        return authService.requestRegistrationOtp(request.phone());
+    }
+
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Créer un compte (rôle BUYER) et ouvrir une session")
+    @Operation(summary = "Inscription, étape 2 : créer le compte (rôle BUYER) avec le code reçu et ouvrir une session")
     public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
         return authService.register(request);
     }
@@ -56,18 +61,5 @@ public class AuthController {
     @Operation(summary = "Révoquer le refresh token")
     public void logout(@Valid @RequestBody RefreshRequest request) {
         authService.logout(request.refreshToken());
-    }
-
-    @PostMapping("/otp/request")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    @Operation(summary = "Envoyer un code à 6 chiffres par SMS (stub : journalisé)")
-    public OtpRequestResponse requestOtp(@Valid @RequestBody OtpRequest request) {
-        return authService.requestOtp(request.phone());
-    }
-
-    @PostMapping("/otp/verify")
-    @Operation(summary = "Vérifier le code ; connecte l'utilisateur si un compte existe pour ce numéro")
-    public OtpVerifyResponse verifyOtp(@Valid @RequestBody OtpVerifyRequest request) {
-        return authService.verifyOtp(request.phone(), request.code());
     }
 }
