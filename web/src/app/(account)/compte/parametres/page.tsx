@@ -12,7 +12,6 @@ export const metadata: Metadata = { title: "Profil & paramètres" };
 
 const SECURITY: { title: string; detail: string; icon: IconName; cta: string }[] = [
   { title: "Mot de passe", detail: "Modifié il y a 3 mois", icon: "lock", cta: "Modifier" },
-  { title: "Validation en 2 étapes", detail: "Code SMS à chaque connexion · activée", icon: "shield", cta: "Gérer" },
   { title: "Appareils connectés", detail: "2 appareils", icon: "info", cta: "Voir" },
 ];
 

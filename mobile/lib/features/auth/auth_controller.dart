@@ -18,13 +18,17 @@ class AuthController extends AsyncNotifier<AppUser?> {
     _sessionChanged();
   }
 
-  Future<void> register(String fullName, String phone, String password) async {
+  /// Sign-up, step 1 (see [AuthRepository.requestRegistrationCode]).
+  Future<void> requestRegistrationCode(String phone) => _repo.requestRegistrationCode(phone);
+
+  /// Sign-up, step 2: [code] is the one received by SMS.
+  Future<void> register(String fullName, String phone, String password, String code) async {
     state = const AsyncLoading<AppUser?>();
-    state = await AsyncValue.guard(() => _repo.register(fullName: fullName, phone: phone, password: password));
+    state = await AsyncValue.guard(
+      () => _repo.register(fullName: fullName, phone: phone, password: password, code: code),
+    );
     _sessionChanged();
   }
-
-  Future<void> requestOtp(String phone) => _repo.requestOtp(phone);
 
   Future<void> logout() async {
     await _repo.logout();

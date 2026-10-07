@@ -5,7 +5,6 @@ import java.util.Optional;
 import mg.inmybush.api.auth.dto.AuthResponse;
 import mg.inmybush.api.auth.dto.LoginRequest;
 import mg.inmybush.api.auth.dto.OtpRequestResponse;
-import mg.inmybush.api.auth.dto.OtpVerifyResponse;
 import mg.inmybush.api.auth.dto.RegisterRequest;
 import mg.inmybush.api.common.BadRequestException;
 import mg.inmybush.api.common.ConflictException;
@@ -40,7 +39,17 @@ public class AuthService {
         this.otpService = otpService;
     }
 
-    @Transactional
+    /** First step of the registration: texts a code to the phone number, which must not have an account yet. */
+    public OtpRequestResponse requestRegistrationOtp(String rawPhone) {
+        String phone = PhoneNumbers.normalize(rawPhone);
+        if (users.existsByPhone(phone)) {
+            throw new ConflictException("PHONE_TAKEN", "Un compte existe déjà avec ce numéro.");
+        }
+        return otpService.request(phone);
+    }
+
+    /** Creates the account once the code texted to the phone is confirmed (wrong attempts are kept: no rollback). */
+    @Transactional(noRollbackFor = BadRequestException.class)
     public AuthResponse register(RegisterRequest req) {
         String phone = PhoneNumbers.normalize(req.phone());
         if (users.existsByPhone(phone)) {
@@ -50,7 +59,9 @@ public class AuthService {
         if (email != null && users.existsByEmailIgnoreCase(email)) {
             throw new ConflictException("EMAIL_TAKEN", "Un compte existe déjà avec cette adresse e-mail.");
         }
+        otpService.verify(phone, req.otpCode());
         User user = new User(req.firstName().trim(), req.lastName().trim(), email, phone, passwordEncoder.encode(req.password()));
+        user.markPhoneVerified();
         users.save(user);
         return issueTokens(user);
     }
@@ -77,24 +88,6 @@ public class AuthService {
     @Transactional
     public void logout(String refreshToken) {
         refreshTokens.revoke(refreshToken);
-    }
-
-    public OtpRequestResponse requestOtp(String rawPhone) {
-        return otpService.request(PhoneNumbers.normalize(rawPhone));
-    }
-
-    @Transactional(noRollbackFor = BadRequestException.class)
-    public OtpVerifyResponse verifyOtp(String rawPhone, String code) {
-        String phone = PhoneNumbers.normalize(rawPhone);
-        otpService.verify(phone, code);
-        Optional<User> user = users.findByPhone(phone);
-        if (user.isEmpty()) {
-            return new OtpVerifyResponse(true, false, null);
-        }
-        User u = user.get();
-        u.markPhoneVerified();
-        ensureActive(u);
-        return new OtpVerifyResponse(true, true, issueTokens(u));
     }
 
     /** Issues a fresh token pair, e.g. after the user got a new role (opening a shop). */
