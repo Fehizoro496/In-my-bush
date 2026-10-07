@@ -7,7 +7,7 @@ import { NumberedSteps } from "@/components/ui/Navigation";
 export default function CheckoutLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="border-b border-line bg-white">
+      <header className="sticky top-0 z-40 border-b border-line bg-white">
         <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 md:h-20 md:px-8 xl:px-20">
           <Link href="/" aria-label="In my bush — accueil" className="flex no-underline">
             <span className="sm:hidden">

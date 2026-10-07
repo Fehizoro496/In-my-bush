@@ -65,39 +65,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       body: SafeArea(
         bottom: false,
-        child: NotificationListener<ScrollNotification>(
-          onNotification: _onScroll,
-          child: RefreshIndicator(
-            color: AppColors.pomme700,
-            onRefresh: _refresh,
-            child: ListView(
-              controller: _scrollController,
-              padding: const EdgeInsets.only(bottom: 32),
-              children: [
-                _Header(onFilters: () => context.push(AppRoutes.filters)),
-                const SizedBox(height: 28),
-                _CategoryShortcuts(categories: categories, onPick: _pickCategory),
-                const SizedBox(height: 28),
-                _PromoBanner(onTap: () => _pickCategory(null)),
-                const SizedBox(height: 28),
-                feed.when(
-                  data: (data) => _FeedSections(feed: data, onSeeAll: _scrollToCatalogue),
-                  loading: () => const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: TwoColumnGrid(children: [
-                      ProductCardSkeleton(),
-                      ProductCardSkeleton(),
-                      ProductCardSkeleton(),
-                      ProductCardSkeleton(),
-                    ]),
-                  ),
-                  error: (e, _) => ErrorState(error: e, onRetry: () => ref.invalidate(homeFeedProvider)),
-                ),
-                const SizedBox(height: 36),
-                KeyedSubtree(key: _catalogueKey, child: _CatalogueSection(categories: categories)),
-              ],
+        child: Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: Row(
+                children: [AppLogo(), Spacer(), CartIconButton()],
+              ),
             ),
-          ),
+            Expanded(
+              child: NotificationListener<ScrollNotification>(
+                onNotification: _onScroll,
+                child: RefreshIndicator(
+                  color: AppColors.pomme700,
+                  onRefresh: _refresh,
+                  child: ListView(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.only(bottom: 32),
+                    children: [
+                      _Header(onFilters: () => context.push(AppRoutes.filters)),
+                      const SizedBox(height: 28),
+                      _CategoryShortcuts(categories: categories, onPick: _pickCategory),
+                      const SizedBox(height: 28),
+                      _PromoBanner(onTap: () => _pickCategory(null)),
+                      const SizedBox(height: 28),
+                      feed.when(
+                        data: (data) => _FeedSections(feed: data, onSeeAll: _scrollToCatalogue),
+                        loading: () => const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: TwoColumnGrid(children: [
+                            ProductCardSkeleton(),
+                            ProductCardSkeleton(),
+                            ProductCardSkeleton(),
+                            ProductCardSkeleton(),
+                          ]),
+                        ),
+                        error: (e, _) => ErrorState(error: e, onRetry: () => ref.invalidate(homeFeedProvider)),
+                      ),
+                      const SizedBox(height: 36),
+                      KeyedSubtree(key: _catalogueKey, child: _CatalogueSection(categories: categories)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -113,18 +125,10 @@ class _Header extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final area = ref.watch(homeFeedProvider).valueOrNull?.deliveryArea ?? 'Analakely, Antananarivo';
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
-            children: [
-              AppLogo(),
-              Spacer(),
-              CartIconButton(),
-            ],
-          ),
-          const SizedBox(height: 14),
           InkWell(
             onTap: () => context.push(AppRoutes.addresses),
             borderRadius: BorderRadius.circular(8),

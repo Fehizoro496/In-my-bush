@@ -75,7 +75,7 @@ export function WebHeader({
   categories: HeaderCategory[];
 }) {
   return (
-    <header className="hidden border-b border-line bg-white lg:block">
+    <header className="sticky top-0 z-40 hidden border-b border-line bg-white lg:block">
       <div className="mx-auto flex h-20 max-w-[1440px] items-center gap-4 px-8 xl:gap-5 xl:px-20">
         <Link href="/" aria-label="In my bush — accueil" className="flex shrink-0 no-underline">
           <Logo />

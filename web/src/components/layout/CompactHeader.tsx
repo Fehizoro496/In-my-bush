@@ -11,7 +11,7 @@ import { HeaderSearch } from "./WebHeader";
  */
 export function CompactHeader({ cartCount, notificationCount }: { cartCount: number; notificationCount: number }) {
   return (
-    <header className="border-b border-line bg-white px-4 pt-3 pb-3 md:border-0 md:bg-transparent md:px-8 md:pt-5 md:pb-0 lg:hidden">
+    <header className="sticky top-0 z-40 border-b border-line bg-white px-4 pt-3 pb-3 md:border-0 md:px-8 md:pt-5 lg:hidden">
       <div className="mb-3 flex items-center justify-between md:hidden">
         <Link href="/" aria-label="In my bush — accueil" className="flex no-underline">
           <Logo size="sm" />
