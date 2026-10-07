@@ -117,5 +117,53 @@
                 </plugins>
             </build>
         </profile>
+        <!--
+            Empties the database (drops every table): ./mvnw initialize -PresetDb
+            The next start of the API recreates the schema (and the dev data with the dev profile).
+            Another database: -Ddb.url=... -Ddb.user=... -Ddb.password=...
+        -->
+        <profile>
+            <id>resetDb</id>
+            <properties>
+                <db.url>jdbc:postgresql://localhost:5432/inmybush</db.url>
+                <db.user>inmybush</db.user>
+                <db.password>inmybush</db.password>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.flywaydb</groupId>
+                        <artifactId>flyway-maven-plugin</artifactId>
+                        <configuration>
+                            <url>${db.url}</url>
+                            <user>${db.user}</user>
+                            <password>${db.password}</password>
+                            <cleanDisabled>false</cleanDisabled>
+                        </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.flywaydb</groupId>
+                                <artifactId>flyway-database-postgresql</artifactId>
+                                <version>${flyway.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.postgresql</groupId>
+                                <artifactId>postgresql</artifactId>
+                                <version>${postgresql.version}</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>reset-db</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
