@@ -9,6 +9,12 @@ Ces règles s’appliquent à tout assistant IA qui travaille sur ce dépôt.
 - Privilégier des commits courts : une seule ligne de titre, sans body.
 - Un commit par changement cohérent, plutôt qu’un gros commit qui mélange plusieurs sujets.
 
+## Tests
+
+- Toute nouvelle fonctionnalité est livrée avec ses tests automatisés.
+- Lancer les tests avant de considérer la fonctionnalité comme terminée, et signaler tout échec.
+- API : `./mvnw test` depuis `api/`. Mobile : `flutter analyze && flutter test` depuis `mobile/`.
+
 ## Repères
 
 - Conventions du projet (branches, langue, montants) : [`README.md`](README.md).
