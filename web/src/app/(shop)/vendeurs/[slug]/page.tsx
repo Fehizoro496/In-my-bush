@@ -8,6 +8,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Stars } from "@/components/ui/Rating";
 import { getShop } from "@/lib/data/catalog";
 import { formatRating, initials } from "@/lib/format";
+import { ROUTES } from "@/lib/routing/routes";
 
 type Params = Promise<{ slug: string }>;
 
@@ -81,7 +82,7 @@ export default async function SellerPage({ params }: { params: Params }) {
             </div>
             <div className="flex gap-2.5 md:pb-2">
               <FollowButton />
-              <ButtonLink href="/compte/messages" icon="msg" size="lg" className="h-12 text-[15px]">
+              <ButtonLink href={ROUTES.accountMessages} icon="msg" size="lg" className="h-12 text-[15px]">
                 Contacter le vendeur
               </ButtonLink>
             </div>

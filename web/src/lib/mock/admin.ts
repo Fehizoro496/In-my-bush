@@ -1,5 +1,6 @@
 /** Backoffice mock data (A-Dashboard, A-Products, A-Users, A-Orders, A-Reports). */
 import type { AdminDashboard, AdminOrderRow, AdminProductRow, AdminReport, AdminUserRow } from "@/lib/types";
+import { ROUTES } from "@/lib/routing/routes";
 
 const CUR = [92, 101, 110, 104, 121, 128, 135, 142, 150, 168, 176, 182];
 const PREV = [60, 64, 70, 72, 78, 82, 88, 90, 95, 101, 108, 115];
@@ -8,14 +9,14 @@ const MONTHS = ["oct.", "nov.", "déc.", "janv.", "févr.", "mars", "avr.", "mai
 export const ADMIN_DASHBOARD: AdminDashboard = {
   asOf: "Données au 28 sept. 2026, 9h00 · comparées à la période précédente",
   kpis: [
-    { label: "Utilisateurs", value: "12 480", delta: "▲ +4,2 % · 1 253 nouveaux", tone: "up", icon: "users", href: "/admin/utilisateurs" },
-    { label: "Vendeurs actifs", value: "386", delta: "▲ +11 · 41 inscrits ce mois", tone: "up", icon: "store", href: "/admin/utilisateurs" },
-    { label: "Produits publiés", value: "5 214", delta: "▲ +3,1 %", tone: "up", icon: "package", href: "/admin/produits" },
-    { label: "Commandes (30 j)", value: "3 942", delta: "▲ +8,6 %", tone: "up", icon: "receipt", href: "/admin/commandes" },
-    { label: "Chiffre d’affaires", value: "182,4 M Ar", delta: "▲ +12,4 % · commission [TAUX]", tone: "up", icon: "wallet", href: "/admin/commandes" },
-    { label: "Volume de ventes", value: "11 860 art.", delta: "▼ −1,8 % panier moyen", tone: "down", icon: "basket", href: "/admin/commandes" },
-    { label: "En attente de validation", value: "24", delta: "Plus ancien : il y a 19 h", tone: "warning", icon: "clock", href: "/admin/produits", highlight: true },
-    { label: "Signalements ouverts", value: "7", delta: "2 prioritaires", tone: "danger", icon: "flag", href: "/admin/signalements", highlight: true },
+    { label: "Utilisateurs", value: "12 480", delta: "▲ +4,2 % · 1 253 nouveaux", tone: "up", icon: "users", href: ROUTES.adminUsers },
+    { label: "Vendeurs actifs", value: "386", delta: "▲ +11 · 41 inscrits ce mois", tone: "up", icon: "store", href: ROUTES.adminUsers },
+    { label: "Produits publiés", value: "5 214", delta: "▲ +3,1 %", tone: "up", icon: "package", href: ROUTES.adminProducts },
+    { label: "Commandes (30 j)", value: "3 942", delta: "▲ +8,6 %", tone: "up", icon: "receipt", href: ROUTES.adminOrders },
+    { label: "Chiffre d’affaires", value: "182,4 M Ar", delta: "▲ +12,4 % · commission [TAUX]", tone: "up", icon: "wallet", href: ROUTES.adminOrders },
+    { label: "Volume de ventes", value: "11 860 art.", delta: "▼ −1,8 % panier moyen", tone: "down", icon: "basket", href: ROUTES.adminOrders },
+    { label: "En attente de validation", value: "24", delta: "Plus ancien : il y a 19 h", tone: "warning", icon: "clock", href: ROUTES.adminProducts, highlight: true },
+    { label: "Signalements ouverts", value: "7", delta: "2 prioritaires", tone: "danger", icon: "flag", href: ROUTES.adminReports, highlight: true },
   ],
   gmv: MONTHS.map((month, i) => ({ month, current: CUR[i]!, previous: PREV[i]! })),
   topCategories: [
@@ -45,9 +46,9 @@ export const ADMIN_DASHBOARD: AdminDashboard = {
   ],
   ordersTotal: 3942,
   queue: [
-    { icon: "package", title: "Produits à valider", detail: "Plus ancien il y a 19 h", count: 24, href: "/admin/produits", tone: "warning" },
-    { icon: "flag", title: "Signalements", detail: "2 prioritaires", count: 7, href: "/admin/signalements", tone: "danger" },
-    { icon: "store", title: "Demandes vendeur", detail: "Identité à contrôler", count: 9, href: "/admin/utilisateurs", tone: "info" },
+    { icon: "package", title: "Produits à valider", detail: "Plus ancien il y a 19 h", count: 24, href: ROUTES.adminProducts, tone: "warning" },
+    { icon: "flag", title: "Signalements", detail: "2 prioritaires", count: 7, href: ROUTES.adminReports, tone: "danger" },
+    { icon: "store", title: "Demandes vendeur", detail: "Identité à contrôler", count: 9, href: ROUTES.adminUsers, tone: "info" },
   ],
 };
 

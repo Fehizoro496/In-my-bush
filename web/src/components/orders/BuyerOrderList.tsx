@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/Feedback";
 import { PhotoPlaceholder } from "@/components/ui/Media";
 import { StepBar } from "@/components/ui/Navigation";
 import { TabList } from "@/components/ui/Tabs";
+import { ROUTES } from "@/lib/routing/routes";
 
 type Tab = "all" | "progress" | "delivered" | "cancelled";
 const TRACK = [{ label: "Confirmée" }, { label: "Préparation" }, { label: "En route" }, { label: "Livrée" }];
@@ -43,7 +44,7 @@ export function BuyerOrderList({ orders }: { orders: BuyerOrderSummary[] }) {
       />
       {shown.length === 0 && <EmptyState icon="package" title="Aucune commande" description="Aucune commande dans cette catégorie." />}
       {shown.map((o) => {
-        const href = `/compte/commandes/${o.id}`;
+        const href = ROUTES.accountOrder(o.id);
         return (
           <article key={o.id} className="overflow-hidden rounded-xl border border-line bg-white">
             <div className="grid grid-cols-2 items-center gap-4 border-b border-divider bg-bg px-4 py-4 text-[14px] md:grid-cols-[repeat(4,minmax(0,1fr))_auto] md:px-[22px]">
@@ -78,7 +79,7 @@ export function BuyerOrderList({ orders }: { orders: BuyerOrderSummary[] }) {
                     <ButtonLink href={href} icon="truck" size="md" className="h-[42px] text-[14px]">
                       Suivre la livraison
                     </ButtonLink>
-                    <ButtonLink href="/compte/messages" variant="neutral" icon="msg" size="md" className="h-[42px] text-[14px]">
+                    <ButtonLink href={ROUTES.accountMessages} variant="neutral" icon="msg" size="md" className="h-[42px] text-[14px]">
                       Contacter les vendeurs
                     </ButtonLink>
                   </>
@@ -95,10 +96,10 @@ export function BuyerOrderList({ orders }: { orders: BuyerOrderSummary[] }) {
                 )}
                 {o.status === "DELIVERED" && (
                   <>
-                    <ButtonLink href="/compte/avis" icon="starO" size="md" className="h-[42px] text-[14px]">
+                    <ButtonLink href={ROUTES.accountReviews} icon="starO" size="md" className="h-[42px] text-[14px]">
                       Laisser un avis
                     </ButtonLink>
-                    <ButtonLink href="/panier" variant="neutral" icon="refresh" size="md" className="h-[42px] text-[14px]">
+                    <ButtonLink href={ROUTES.cart} variant="neutral" icon="refresh" size="md" className="h-[42px] text-[14px]">
                       Racheter
                     </ButtonLink>
                     <button type="button" className="flex h-[42px] items-center justify-center gap-1.5 rounded-[10px] text-[14px] font-bold text-body hover:bg-sand">

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/cn";
 import { formatAriary } from "@/lib/format";
@@ -9,6 +8,8 @@ import { Icon } from "@/components/ui/Icon";
 import { QuantityStepper } from "@/components/ui/QuantityStepper";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
+import { routeService } from "@/lib/routing/route.service";
+import { ROUTES } from "@/lib/routing/routes";
 
 /** Quantity + "Ajouter au panier" + favourite + "Acheter maintenant" (W-Product). */
 export function PurchaseBox({
@@ -28,7 +29,6 @@ export function PurchaseBox({
   const [added, setAdded] = useState(false);
   const [fav, setFav] = useState(false);
   const toast = useToast();
-  const router = useRouter();
 
   if (out) {
     return (
@@ -57,7 +57,7 @@ export function PurchaseBox({
           type="button"
           onClick={() => {
             setAdded(!added);
-            if (!added) toast.show({ title: "Ajouté au panier", description: `${name} · ${qty} ${unitLabel}`, action: { label: "Voir", onClick: () => router.push("/panier") } });
+            if (!added) toast.show({ title: "Ajouté au panier", description: `${name} · ${qty} ${unitLabel}`, action: { label: "Voir", onClick: () => routeService.toCart() } });
           }}
           className={cn(
             "flex h-14 flex-1 items-center justify-center gap-2 rounded-md text-[16px] font-bold transition-colors",
@@ -82,7 +82,7 @@ export function PurchaseBox({
         </button>
       </div>
       <Link
-        href="/commande"
+        href={ROUTES.checkout}
         className="flex h-14 items-center justify-center rounded-md border-[1.5px] border-ink text-[16px] font-bold text-ink no-underline hover:bg-ink hover:text-white"
       >
         Acheter maintenant · {formatAriary(price * qty)}

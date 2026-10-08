@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PaymentMethods } from "@/components/account/PaymentMethods";
 import { Icon } from "@/components/ui/Icon";
 import { getPaymentSettings } from "@/lib/data/account";
+import { ROUTES } from "@/lib/routing/routes";
 
 export const metadata: Metadata = { title: "Paiement & versements" };
 
@@ -45,7 +46,7 @@ export default async function PaymentsPage() {
                 <span className="text-[13px] text-lime">{nextPayout.label}</span>
                 <b className="font-display text-[32px]">{nextPayout.amount}</b>
               </span>
-              <Link href="/compte/paiements#versement" className="flex h-10 items-center rounded-[10px] bg-[rgba(244,250,232,0.12)] px-3.5 text-[14px] font-bold text-pomme-50 no-underline hover:text-pomme-50">
+              <Link href={`${ROUTES.accountPayments}#versement`} className="flex h-10 items-center rounded-[10px] bg-[rgba(244,250,232,0.12)] px-3.5 text-[14px] font-bold text-pomme-50 no-underline hover:text-pomme-50">
                 Modifier
               </Link>
             </div>
@@ -54,7 +55,7 @@ export default async function PaymentsPage() {
           <div className="overflow-hidden rounded-xl border border-line bg-white">
             <div className="flex items-center justify-between px-[18px] py-3.5">
               <b className="text-[16px]">Derniers versements</b>
-              <Link href="/vendre/historique" className="text-[13px] font-bold no-underline">
+              <Link href={ROUTES.sellerHistory} className="text-[13px] font-bold no-underline">
                 Tout voir
               </Link>
             </div>

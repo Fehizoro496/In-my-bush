@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/cn";
 import { formatAriary, initials } from "@/lib/format";
@@ -10,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Input, RadioIndicator, Select } from "@/components/ui/Form";
 import { PhotoPlaceholder } from "@/components/ui/Media";
+import { routeService } from "@/lib/routing/route.service";
 
 type Pay = "mm" | "card" | "cod";
 
@@ -25,7 +25,6 @@ function choiceCls(on: boolean) {
 
 /** Address, per-shop delivery mode, payment and summary (W-Checkout). */
 export function CheckoutForm({ draft }: { draft: CheckoutDraft }) {
-  const router = useRouter();
   const [address, setAddress] = useState(draft.addresses.find((a) => a.isDefault)?.id ?? draft.addresses[0]?.id);
   const [modes, setModes] = useState<Record<string, DeliveryMode>>(Object.fromEntries(draft.groups.map((g) => [g.shop.id, "HOME"])));
   const [pay, setPay] = useState<Pay>("mm");
@@ -43,7 +42,7 @@ export function CheckoutForm({ draft }: { draft: CheckoutDraft }) {
         e.preventDefault();
         setSubmitting(true);
         // TODO(api): ordersApi.checkout({ addressId, deliveryModes, payment }) via a server action.
-        router.push("/commande/confirmation");
+        routeService.toCheckoutConfirmation();
       }}
     >
       <div className="flex flex-col gap-6 lg:gap-7">

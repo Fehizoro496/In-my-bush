@@ -15,6 +15,7 @@
  * Dev: NEXT_PUBLIC_AUTH_BYPASS=true lets every page render without a session.
  */
 import { NextResponse, type NextRequest } from "next/server";
+import { ROUTES, isRoute } from "@/lib/routing/routes";
 
 const SESSION_COOKIE = "imb_session";
 
@@ -38,19 +39,20 @@ export function proxy(request: NextRequest) {
   const roles = token ? readRoles(token) : [];
 
   if (!token || roles.length === 0) {
-    const url = new URL("/connexion", request.url);
+    const url = new URL(ROUTES.login, request.url);
     url.searchParams.set("next", `${pathname}${search}`);
     return NextResponse.redirect(url);
   }
-  if (pathname.startsWith("/admin") && !roles.includes("ADMIN")) {
-    return NextResponse.redirect(new URL("/", request.url));
+  if (isRoute(pathname, ROUTES.admin) && !roles.includes("ADMIN")) {
+    return NextResponse.redirect(new URL(ROUTES.home, request.url));
   }
-  if (pathname.startsWith("/vendre") && !pathname.startsWith("/vendre/ouvrir-ma-boutique") && !roles.includes("SELLER")) {
-    return NextResponse.redirect(new URL("/vendre/ouvrir-ma-boutique", request.url));
+  if (isRoute(pathname, ROUTES.seller) && !isRoute(pathname, ROUTES.sellerOnboarding) && !roles.includes("SELLER")) {
+    return NextResponse.redirect(new URL(ROUTES.sellerOnboarding, request.url));
   }
   return NextResponse.next();
 }
 
+// The matcher must stay literal: Next.js reads it at build time. routes.test.ts checks it against ROUTES.
 export const config = {
   matcher: ["/compte/:path*", "/vendre/:path*", "/admin/:path*"],
 };

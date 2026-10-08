@@ -11,6 +11,7 @@ import type {
   Visual,
 } from "@/lib/types";
 import { pick, SHOPS } from "./catalog";
+import { ROUTES } from "@/lib/routing/routes";
 
 export const CURRENT_USER: User = {
   id: "user-hery",
@@ -221,13 +222,13 @@ export const MESSAGES: Record<string, Message[]> = {
 /* ------------------------------------------------------------------ */
 
 export const NOTIFICATIONS: AppNotification[] = [
-  { id: "n1", context: "PURCHASE", kind: "order", title: "Votre commande est en route", body: "IMB-24817 · Naina arrive entre 10h et 11h.", link: "/compte/commandes/ord-24817", readAt: null, timeLabel: "9:32", group: "Aujourd’hui" },
-  { id: "n2", context: "SALE", kind: "sale", title: "Nouvelle commande reçue", body: "Mialy R. · Brèdes ×3, Tomates 2 kg · à confirmer avant 14h.", link: "/vendre/commandes/sord-24821", readAt: null, timeLabel: "9:12", group: "Aujourd’hui", cta: "Confirmer" },
-  { id: "n3", context: "PURCHASE", kind: "msg", title: "Rucher d’Ambohimanga vous a écrit", body: "« Le livreur part à 9h30, bonne journée ! »", link: "/compte/messages", readAt: null, timeLabel: "9:28", group: "Aujourd’hui" },
-  { id: "n4", context: "SALE", kind: "stock", title: "Stock faible", body: "Carottes nouvelles : plus que 3 kg.", link: "/vendre/produits", readAt: "2026-09-28T08:05:00+03:00", timeLabel: "8:00", group: "Aujourd’hui", cta: "Réassortir" },
-  { id: "n5", context: "PURCHASE", kind: "review", title: "Donnez votre avis", body: "Savon au ravintsara · Atelier Hazo", link: "/compte/avis", readAt: null, timeLabel: "Lun.", group: "Cette semaine", cta: "Laisser un avis" },
-  { id: "n6", context: "SYSTEM", kind: "promo", title: "Un favori est en promotion", body: "Avocats Hass : −20 % jusqu’à dimanche.", link: "/produits/avocats-hass", readAt: "2026-09-27T10:00:00+03:00", timeLabel: "Dim.", group: "Cette semaine" },
-  { id: "n7", context: "SALE", kind: "sale", title: "Paiement versé", body: "Commande IMB-24761 · versé sur MVola •• 12.", link: "/vendre/historique", readAt: "2026-09-27T10:00:00+03:00", timeLabel: "Sam.", group: "Cette semaine" },
+  { id: "n1", context: "PURCHASE", kind: "order", title: "Votre commande est en route", body: "IMB-24817 · Naina arrive entre 10h et 11h.", link: ROUTES.accountOrder("ord-24817"), readAt: null, timeLabel: "9:32", group: "Aujourd’hui" },
+  { id: "n2", context: "SALE", kind: "sale", title: "Nouvelle commande reçue", body: "Mialy R. · Brèdes ×3, Tomates 2 kg · à confirmer avant 14h.", link: ROUTES.sellerOrder("sord-24821"), readAt: null, timeLabel: "9:12", group: "Aujourd’hui", cta: "Confirmer" },
+  { id: "n3", context: "PURCHASE", kind: "msg", title: "Rucher d’Ambohimanga vous a écrit", body: "« Le livreur part à 9h30, bonne journée ! »", link: ROUTES.accountMessages, readAt: null, timeLabel: "9:28", group: "Aujourd’hui" },
+  { id: "n4", context: "SALE", kind: "stock", title: "Stock faible", body: "Carottes nouvelles : plus que 3 kg.", link: ROUTES.sellerProducts, readAt: "2026-09-28T08:05:00+03:00", timeLabel: "8:00", group: "Aujourd’hui", cta: "Réassortir" },
+  { id: "n5", context: "PURCHASE", kind: "review", title: "Donnez votre avis", body: "Savon au ravintsara · Atelier Hazo", link: ROUTES.accountReviews, readAt: null, timeLabel: "Lun.", group: "Cette semaine", cta: "Laisser un avis" },
+  { id: "n6", context: "SYSTEM", kind: "promo", title: "Un favori est en promotion", body: "Avocats Hass : −20 % jusqu’à dimanche.", link: ROUTES.product("avocats-hass"), readAt: "2026-09-27T10:00:00+03:00", timeLabel: "Dim.", group: "Cette semaine" },
+  { id: "n7", context: "SALE", kind: "sale", title: "Paiement versé", body: "Commande IMB-24761 · versé sur MVola •• 12.", link: ROUTES.sellerHistory, readAt: "2026-09-27T10:00:00+03:00", timeLabel: "Sam.", group: "Cette semaine" },
 ];
 
 /* ------------------------------------------------------------------ */

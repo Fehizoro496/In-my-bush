@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { Logo } from "@/components/layout/Logo";
 import { Icon } from "@/components/ui/Icon";
+import { ROUTES } from "@/lib/routing/routes";
 
 export const metadata: Metadata = { title: "Connexion" };
 
@@ -23,7 +24,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <span className="absolute top-[190px] right-[120px] hidden text-pomme-500 lg:flex" aria-hidden>
           <Icon name="sprout" size={200} />
         </span>
-        <Link href="/" aria-label="In my bush — accueil" className="relative flex no-underline">
+        <Link href={ROUTES.home} aria-label="In my bush — accueil" className="relative flex no-underline">
           <Logo tone="dark" />
         </Link>
         <div className="relative hidden max-w-[460px] flex-col gap-7 md:flex">

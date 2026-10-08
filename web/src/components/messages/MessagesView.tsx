@@ -7,6 +7,7 @@ import type { Conversation, Message, MessageContext } from "@/lib/types";
 import { Avatar } from "@/components/ui/Avatar";
 import { Icon } from "@/components/ui/Icon";
 import { TabList } from "@/components/ui/Tabs";
+import { ROUTES } from "@/lib/routing/routes";
 
 /** Conversations list · chat thread · context panel (W-Messages). */
 export function MessagesView({ conversations, messages }: { conversations: Conversation[]; messages: Record<string, Message[]> }) {
@@ -154,7 +155,7 @@ export function MessagesView({ conversations, messages }: { conversations: Conve
       <aside className="hidden flex-col gap-3.5 border-l border-line bg-white p-5 xl:flex">
         <span className="overline text-muted">À propos de cet échange</span>
         {current?.order && (
-          <Link href="/compte/commandes/ord-24817" className="flex items-center gap-2.5 rounded-[14px] border border-line p-3 text-ink no-underline hover:text-ink">
+          <Link href={ROUTES.accountOrder("ord-24817")} className="flex items-center gap-2.5 rounded-[14px] border border-line p-3 text-ink no-underline hover:text-ink">
             <span className="flex size-11 items-center justify-center rounded-[10px] bg-[#FDE6CC] text-orange-700">
               <Icon name="package" size={20} />
             </span>
@@ -166,7 +167,7 @@ export function MessagesView({ conversations, messages }: { conversations: Conve
         )}
         {current?.shopSlug && (
           <Link
-            href={`/vendeurs/${current.shopSlug}`}
+            href={ROUTES.shop(current.shopSlug)}
             className="flex h-[42px] items-center justify-center gap-1.5 rounded-[10px] bg-pomme-100 text-[14px] font-bold text-pomme-800 no-underline"
           >
             <Icon name="store" size={16} />

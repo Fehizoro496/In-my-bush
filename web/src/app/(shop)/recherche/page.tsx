@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/Feedback";
 import { Select } from "@/components/ui/Form";
 import { searchCatalog } from "@/lib/data/catalog";
+import { ROUTES } from "@/lib/routing/routes";
 
 export const metadata: Metadata = { title: "Recherche" };
 
@@ -44,7 +45,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
             {data.shops.map((s) => (
               <Link
                 key={s.slug}
-                href={`/vendeurs/${s.slug}`}
+                href={ROUTES.shop(s.slug)}
                 className="flex items-center gap-3.5 rounded-[18px] border border-line bg-white px-[18px] py-4 text-ink no-underline hover:border-pomme-300 hover:text-ink"
               >
                 <span

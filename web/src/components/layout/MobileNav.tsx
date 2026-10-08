@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { CountBadge } from "@/components/ui/Badge";
+import { ROUTES, isRoute } from "@/lib/routing/routes";
 
 interface NavItem {
   label: string;
@@ -17,18 +18,18 @@ interface NavItem {
 
 function buildItems(counters: { cart: number; messages: number; notifications: number }) {
   const rail: NavItem[] = [
-    { label: "Accueil", href: "/", icon: "home", match: (p) => p === "/" || p.startsWith("/catalogue") || p.startsWith("/produits") || p.startsWith("/categories") },
-    { label: "Messages", href: "/compte/messages", icon: "msg", badge: counters.messages, match: (p) => p.startsWith("/compte/messages") },
-    { label: "Vendre", href: "/vendre", icon: "plus", sell: true, match: (p) => p.startsWith("/vendre") },
-    { label: "Panier", href: "/panier", icon: "cart", badge: counters.cart, match: (p) => p.startsWith("/panier") || p.startsWith("/commande") },
-    { label: "Profil", href: "/compte", icon: "user", match: (p) => p.startsWith("/compte") && !p.startsWith("/compte/messages") },
+    { label: "Accueil", href: ROUTES.home, icon: "home", match: (p) => isRoute(p, ROUTES.home, { exact: true }) || isRoute(p, ROUTES.catalogue) || isRoute(p, ROUTES.product) || isRoute(p, ROUTES.categories) },
+    { label: "Messages", href: ROUTES.accountMessages, icon: "msg", badge: counters.messages, match: (p) => isRoute(p, ROUTES.accountMessages) },
+    { label: "Vendre", href: ROUTES.seller, icon: "plus", sell: true, match: (p) => isRoute(p, ROUTES.seller) },
+    { label: "Panier", href: ROUTES.cart, icon: "cart", badge: counters.cart, match: (p) => isRoute(p, ROUTES.cart) || isRoute(p, ROUTES.checkout) },
+    { label: "Profil", href: ROUTES.account, icon: "user", match: (p) => isRoute(p, ROUTES.account) && !isRoute(p, ROUTES.accountMessages) },
   ];
   const bar: NavItem[] = [
     rail[0]!,
     rail[1]!,
     rail[2]!,
-    { label: "Notifs", href: "/compte/notifications", icon: "bell", badge: counters.notifications, match: (p) => p.startsWith("/compte/notifications") },
-    { label: "Paramètres", href: "/compte/parametres", icon: "settings", match: (p) => p.startsWith("/compte") && !p.startsWith("/compte/messages") && !p.startsWith("/compte/notifications") },
+    { label: "Notifs", href: ROUTES.accountNotifications, icon: "bell", badge: counters.notifications, match: (p) => isRoute(p, ROUTES.accountNotifications) },
+    { label: "Paramètres", href: ROUTES.accountSettings, icon: "settings", match: (p) => isRoute(p, ROUTES.account) && !isRoute(p, ROUTES.accountMessages) && !isRoute(p, ROUTES.accountNotifications) },
   ];
   return { rail, bar };
 }
@@ -43,7 +44,7 @@ export function TabletRail({ counters }: { counters: { cart: number; messages: n
       className="fixed inset-y-0 left-0 z-40 hidden w-[84px] flex-col items-center gap-2 border-r border-line bg-white py-5 md:flex lg:hidden"
     >
       <Link
-        href="/"
+        href={ROUTES.home}
         aria-label="In my bush — accueil"
         className="mb-5 flex size-11 items-center justify-center rounded-[14px] bg-pomme-500 text-on-primary"
       >

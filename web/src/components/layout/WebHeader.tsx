@@ -6,6 +6,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { initials } from "@/lib/format";
 import { CategoryLinks, HeaderCategoryLinks, type HeaderCategory } from "./HeaderCategoryNav";
 import { Logo } from "./Logo";
+import { ROUTES } from "@/lib/routing/routes";
 
 export interface HeaderUser {
   firstName: string;
@@ -27,7 +28,7 @@ export function HeaderSearch({
   return (
     <form
       role="search"
-      action="/recherche"
+      action={ROUTES.search}
       className="flex h-12 min-w-0 flex-1 items-center gap-2.5 rounded-md border-[1.5px] border-line-strong bg-bg pr-1.5 pl-3.5 focus-within:border-pomme-600 focus-within:shadow-[0_0_0_4px_rgba(140,198,63,0.22)] md:h-[52px] lg:h-12"
     >
       <Icon name="search" size={20} className="text-muted" />
@@ -77,11 +78,11 @@ export function WebHeader({
   return (
     <header className="sticky top-0 z-40 hidden border-b border-line bg-white lg:block">
       <div className="mx-auto flex h-20 max-w-[1440px] items-center gap-4 px-8 xl:gap-5 xl:px-20">
-        <Link href="/" aria-label="In my bush — accueil" className="flex shrink-0 no-underline">
+        <Link href={ROUTES.home} aria-label="In my bush — accueil" className="flex shrink-0 no-underline">
           <Logo />
         </Link>
         <Link
-          href="/categories"
+          href={ROUTES.categories}
           className="flex h-11 shrink-0 items-center gap-2 rounded-[10px] bg-sand px-3.5 text-[14px] font-semibold text-ink no-underline hover:bg-divider hover:text-ink"
         >
           <Icon name="grid" size={18} />
@@ -90,7 +91,7 @@ export function WebHeader({
         </Link>
         <HeaderSearch />
         <Link
-          href="/vendre"
+          href={ROUTES.seller}
           className="flex h-11 shrink-0 items-center gap-2 rounded-[10px] border-[1.5px] border-pomme-500 bg-pomme-50 px-4 text-[14px] font-bold text-pomme-800 no-underline hover:bg-mint hover:text-pomme-800"
         >
           <Icon name="store" size={18} />
@@ -98,14 +99,14 @@ export function WebHeader({
         </Link>
         <nav aria-label="Compte" className="flex shrink-0 items-center gap-1">
           <Link
-            href="/compte/favoris"
+            href={ROUTES.accountFavorites}
             className="flex h-[52px] w-16 flex-col items-center justify-center gap-0.5 text-[12px] font-medium text-ink no-underline hover:text-pomme-700"
           >
             <Icon name="heart" size={22} />
             Favoris
           </Link>
           <Link
-            href="/panier"
+            href={ROUTES.cart}
             aria-label={`Panier, ${cartCount} article${cartCount > 1 ? "s" : ""}`}
             className="flex h-[52px] w-16 flex-col items-center justify-center gap-0.5 text-[12px] font-medium text-ink no-underline hover:text-pomme-700"
           >
@@ -116,7 +117,7 @@ export function WebHeader({
             Panier
           </Link>
           {user ? (
-            <Link href="/compte" className="flex h-[52px] items-center gap-2 pl-2 text-ink no-underline hover:text-ink">
+            <Link href={ROUTES.account} className="flex h-[52px] items-center gap-2 pl-2 text-ink no-underline hover:text-ink">
               <Avatar initials={initials(`${user.firstName} ${user.lastName}`)} color="#365A10" size={36} />
               <span className="flex flex-col text-[12px] leading-[15px]">
                 <span className="text-muted">Bonjour</span>
@@ -125,7 +126,7 @@ export function WebHeader({
             </Link>
           ) : (
             <Link
-              href="/connexion"
+              href={ROUTES.login}
               className="flex h-[52px] items-center gap-2 pl-2 text-[14px] font-bold text-ink no-underline hover:text-pomme-700"
             >
               <Icon name="user" size={22} />

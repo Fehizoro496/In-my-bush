@@ -8,6 +8,7 @@ import type { ProductSummary } from "@/lib/types";
 import { Icon } from "@/components/ui/Icon";
 import { RatingInline } from "@/components/ui/Rating";
 import { useToast } from "@/components/ui/Toast";
+import { ROUTES } from "@/lib/routing/routes";
 
 /** Product card (ProductCard.dc.html): photo, promo, favourite, seller · place, rating, price / unit, quick add. */
 export function ProductCard({ product, href, className }: { product: ProductSummary; href?: string; className?: string }) {
@@ -16,7 +17,7 @@ export function ProductCard({ product, href, className }: { product: ProductSumm
   const toast = useToast();
   const out = product.stockLevel === "OUT";
   const low = product.stockLevel === "LOW";
-  const link = href ?? `/produits/${product.slug}`;
+  const link = href ?? ROUTES.product(product.slug);
   const v = product.visual;
 
   return (

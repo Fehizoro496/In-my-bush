@@ -2,6 +2,7 @@ import Link from "next/link";
 import { formatRating, initials } from "@/lib/format";
 import type { ShopSummary } from "@/lib/types";
 import { Icon } from "@/components/ui/Icon";
+import { ROUTES } from "@/lib/routing/routes";
 
 /** Seller card (SellerCard.dc.html). */
 export function SellerCard({ shop, href }: { shop: ShopSummary; href?: string }) {
@@ -56,7 +57,7 @@ export function SellerCard({ shop, href }: { shop: ShopSummary; href?: string })
           ))}
         </div>
         <Link
-          href={href ?? `/vendeurs/${shop.slug}`}
+          href={href ?? ROUTES.shop(shop.slug)}
           className="mt-1 flex h-11 items-center justify-center gap-1.5 rounded-[10px] border-[1.5px] border-pomme-300 text-[14px] font-bold text-pomme-800 no-underline hover:bg-pomme-50 hover:text-pomme-800"
         >
           Voir la boutique

@@ -13,6 +13,7 @@ import { Breadcrumb } from "@/components/ui/Navigation";
 import { RatingBars, Stars } from "@/components/ui/Rating";
 import { getProduct, getProductReviews, getSimilarProducts } from "@/lib/data/catalog";
 import { formatAriary, formatRating } from "@/lib/format";
+import { ROUTES, withQuery } from "@/lib/routing/routes";
 
 type Params = Promise<{ slug: string }>;
 
@@ -33,8 +34,8 @@ export default async function ProductPage({ params }: { params: Params }) {
       <Container className="flex flex-col gap-8 lg:gap-10">
         <Breadcrumb
           items={[
-            { label: "Accueil", href: "/" },
-            { label: product.category.name, href: `/catalogue?categorie=${product.category.slug}` },
+            { label: "Accueil", href: ROUTES.home },
+            { label: product.category.name, href: withQuery(ROUTES.catalogue, { categorie: product.category.slug }) },
             { label: product.name },
           ]}
         />
@@ -43,7 +44,7 @@ export default async function ProductPage({ params }: { params: Params }) {
           <ProductGallery images={product.images} badge={product.distanceKm ? `Local · ${product.distanceKm} km` : undefined} />
           <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-2.5">
-              <Link href={`/vendeurs/${product.shop.slug}`} className="flex items-center gap-1.5 text-[14px] font-bold no-underline">
+              <Link href={ROUTES.shop(product.shop.slug)} className="flex items-center gap-1.5 text-[14px] font-bold no-underline">
                 {product.shopDetail.name}
                 <Icon name="shield" size={15} className="text-info-strong" label="Vendeur vérifié" />
               </Link>
@@ -148,7 +149,7 @@ export default async function ProductPage({ params }: { params: Params }) {
             <div id="avis" className="flex scroll-mt-6 flex-col gap-5">
               <div className="flex items-center justify-between gap-3">
                 <h2 className="m-0 font-display text-[26px] font-bold lg:text-[28px]">Avis clients</h2>
-                <ButtonLink href="/compte/avis" variant="outline">
+                <ButtonLink href={ROUTES.accountReviews} variant="outline">
                   Écrire un avis
                 </ButtonLink>
               </div>
@@ -185,7 +186,7 @@ export default async function ProductPage({ params }: { params: Params }) {
             <div className="flex flex-col gap-2.5 rounded-lg border border-line bg-white p-[18px]">
               <b className="text-[15px]">Une question sur ce produit ?</b>
               <span className="text-[14px] text-body">Le vendeur répond en général en moins d’une heure.</span>
-              <ButtonLink href="/compte/messages" icon="msg" size="md" className="text-[14px]">
+              <ButtonLink href={ROUTES.accountMessages} icon="msg" size="md" className="text-[14px]">
                 Contacter le vendeur
               </ButtonLink>
             </div>

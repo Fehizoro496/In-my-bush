@@ -12,6 +12,7 @@ import { Stars } from "@/components/ui/Rating";
 import { Table, THead, Td, Th, Tr } from "@/components/ui/Table";
 import { getSellerDashboard } from "@/lib/data/seller";
 import { formatAriary, formatCompactAriary, formatRating } from "@/lib/format";
+import { ROUTES } from "@/lib/routing/routes";
 
 export const metadata: Metadata = { title: "Tableau de bord vendeur" };
 
@@ -31,10 +32,10 @@ export default async function SellerDashboardPage() {
         actions={
           <>
             <PeriodSwitch options={["7 jours", "30 jours", "12 mois"]} defaultValue="30 jours" />
-            <ButtonLink href="/vendeurs/le-jardin-de-hery" variant="neutral" icon="eye" size="md" className="px-3.5 text-[14px]">
+            <ButtonLink href={ROUTES.shop("le-jardin-de-hery")} variant="neutral" icon="eye" size="md" className="px-3.5 text-[14px]">
               Ma boutique
             </ButtonLink>
-            <ButtonLink href="/vendre/produits/nouveau" icon="plus" size="md" className="px-4 text-[14px]">
+            <ButtonLink href={ROUTES.sellerProductNew} icon="plus" size="md" className="px-4 text-[14px]">
               Ajouter un produit
             </ButtonLink>
           </>
@@ -70,7 +71,7 @@ export default async function SellerDashboardPage() {
               <Icon name="alert" size={18} className="text-orange-700" />
               Bientôt en rupture
             </h2>
-            <Link href="/vendre/produits" className="text-[13px] font-bold no-underline">
+            <Link href={ROUTES.sellerProducts} className="text-[13px] font-bold no-underline">
               Gérer le stock
             </Link>
           </div>
@@ -93,7 +94,7 @@ export default async function SellerDashboardPage() {
         <section className="overflow-hidden rounded-xl border border-line bg-white">
           <div className="flex items-center justify-between px-5 py-[18px] md:px-[22px]">
             <h2 className="m-0 text-[18px] font-bold">Commandes reçues</h2>
-            <Link href="/vendre/commandes" className="text-[13px] font-bold no-underline">
+            <Link href={ROUTES.sellerOrders} className="text-[13px] font-bold no-underline">
               Tout voir ({k.ordersReceived})
             </Link>
           </div>
@@ -109,7 +110,7 @@ export default async function SellerDashboardPage() {
               {d.recentOrders.map((o) => (
                 <Tr key={o.id}>
                   <Td>
-                    <Link href={`/vendre/commandes/${o.id}`} className="font-bold text-ink no-underline hover:text-pomme-700">
+                    <Link href={ROUTES.sellerOrder(o.id)} className="font-bold text-ink no-underline hover:text-pomme-700">
                       {o.number}
                     </Link>
                     <div className="text-[12px] text-muted">{o.createdLabel}</div>
@@ -142,7 +143,7 @@ export default async function SellerDashboardPage() {
               <p className="m-0 text-[14px] leading-5 text-text-soft">{r.comment}</p>
               <span className="text-[12px] text-muted">
                 {r.productName} ·{" "}
-                <Link href="/vendre/avis" className="font-bold no-underline">
+                <Link href={ROUTES.sellerReviews} className="font-bold no-underline">
                   Répondre
                 </Link>
               </span>

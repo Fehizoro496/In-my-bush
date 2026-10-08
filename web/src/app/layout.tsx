@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { ToastProvider } from "@/components/ui/Toast";
+import { RouteServiceBinder } from "@/lib/routing/RouteServiceBinder";
 import "./globals.css";
 
 /*
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" className={`${bricolage.variable} ${figtree.variable}`}>
       <body className="min-h-dvh bg-bg text-ink antialiased">
+        <RouteServiceBinder />
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>

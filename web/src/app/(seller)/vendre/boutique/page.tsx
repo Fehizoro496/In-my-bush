@@ -6,6 +6,7 @@ import { Button, ButtonLink } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { getMyShop } from "@/lib/data/seller";
 import { initials } from "@/lib/format";
+import { ROUTES } from "@/lib/routing/routes";
 
 export const metadata: Metadata = { title: "Profil de la boutique" };
 
@@ -17,7 +18,7 @@ export default async function ShopProfilePage() {
         title="Profil de la boutique"
         actions={
           <>
-            <ButtonLink href={`/vendeurs/${shop.slug}`} variant="neutral" icon="eye" className="px-3.5 text-[14px]">
+            <ButtonLink href={ROUTES.shop(shop.slug)} variant="neutral" icon="eye" className="px-3.5 text-[14px]">
               Voir la page publique
             </ButtonLink>
             <Button type="submit" form="shop-form" className="text-[14px]">

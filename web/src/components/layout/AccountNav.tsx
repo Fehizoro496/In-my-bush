@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Avatar } from "@/components/ui/Avatar";
+import { ROUTES, isRoute, withQuery } from "@/lib/routing/routes";
 
 export interface AccountCounters {
   ordersInProgress: number;
@@ -26,24 +27,24 @@ interface Item {
 function groups(c: AccountCounters, isSeller: boolean): { title: string; icon: IconName; items: Item[] }[] {
   const sell: Item[] = isSeller
     ? [
-        { label: "Tableau de bord", href: "/vendre", icon: "chart", match: (p) => p === "/vendre" },
-        { label: "Mes produits", href: "/vendre/produits", icon: "package", match: (p) => p.startsWith("/vendre/produits") },
-        { label: "Stock", href: "/vendre/produits?filtre=stock", icon: "layers", badge: c.lowStock, match: () => false },
-        { label: "Commandes reçues", href: "/vendre/commandes", icon: "receipt", badge: c.ordersToHandle, match: (p) => p.startsWith("/vendre/commandes") },
-        { label: "Historique des ventes", href: "/vendre/historique", icon: "trend" },
-        { label: "Avis reçus", href: "/vendre/avis", icon: "star" },
-        { label: "Profil vendeur", href: "/vendre/boutique", icon: "store" },
+        { label: "Tableau de bord", href: ROUTES.seller, icon: "chart", match: (p) => isRoute(p, ROUTES.seller, { exact: true }) },
+        { label: "Mes produits", href: ROUTES.sellerProducts, icon: "package", match: (p) => isRoute(p, ROUTES.sellerProducts) },
+        { label: "Stock", href: withQuery(ROUTES.sellerProducts, { filtre: "stock" }), icon: "layers", badge: c.lowStock, match: () => false },
+        { label: "Commandes reçues", href: ROUTES.sellerOrders, icon: "receipt", badge: c.ordersToHandle, match: (p) => isRoute(p, ROUTES.sellerOrders) },
+        { label: "Historique des ventes", href: ROUTES.sellerHistory, icon: "trend" },
+        { label: "Avis reçus", href: ROUTES.sellerReviews, icon: "star" },
+        { label: "Profil vendeur", href: ROUTES.sellerShop, icon: "store" },
       ]
-    : [{ label: "Ouvrir ma boutique", href: "/vendre/ouvrir-ma-boutique", icon: "store" }];
+    : [{ label: "Ouvrir ma boutique", href: ROUTES.sellerOnboarding, icon: "store" }];
   return [
     {
       title: "Mes achats",
       icon: "basket",
       items: [
-        { label: "Commandes", href: "/compte", icon: "package", badge: c.ordersInProgress, match: (p) => p === "/compte" || p.startsWith("/compte/commandes") },
-        { label: "Favoris", href: "/compte/favoris", icon: "heart" },
-        { label: "Messages", href: "/compte/messages", icon: "msg", badge: c.unreadMessages },
-        { label: "Avis à laisser", href: "/compte/avis", icon: "starO", badge: c.reviewsToLeave },
+        { label: "Commandes", href: ROUTES.account, icon: "package", badge: c.ordersInProgress, match: (p) => isRoute(p, ROUTES.account, { exact: true }) || isRoute(p, ROUTES.accountOrder) },
+        { label: "Favoris", href: ROUTES.accountFavorites, icon: "heart" },
+        { label: "Messages", href: ROUTES.accountMessages, icon: "msg", badge: c.unreadMessages },
+        { label: "Avis à laisser", href: ROUTES.accountReviews, icon: "starO", badge: c.reviewsToLeave },
       ],
     },
     { title: "Mes ventes", icon: "store", items: sell },
@@ -51,11 +52,11 @@ function groups(c: AccountCounters, isSeller: boolean): { title: string; icon: I
       title: "Compte",
       icon: "user",
       items: [
-        { label: "Profil", href: "/compte/parametres#profil", icon: "user", match: () => false },
-        { label: "Adresses", href: "/compte/adresses", icon: "pin" },
-        { label: "Moyens de paiement", href: "/compte/paiements", icon: "wallet" },
-        { label: "Notifications", href: "/compte/notifications", icon: "bell", badge: c.unreadNotifications },
-        { label: "Paramètres", href: "/compte/parametres", icon: "settings" },
+        { label: "Profil", href: `${ROUTES.accountSettings}#profil`, icon: "user", match: () => false },
+        { label: "Adresses", href: ROUTES.accountAddresses, icon: "pin" },
+        { label: "Moyens de paiement", href: ROUTES.accountPayments, icon: "wallet" },
+        { label: "Notifications", href: ROUTES.accountNotifications, icon: "bell", badge: c.unreadNotifications },
+        { label: "Paramètres", href: ROUTES.accountSettings, icon: "settings" },
       ],
     },
   ];

@@ -1,15 +1,14 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Checkbox, Input } from "@/components/ui/Form";
 import { TabList } from "@/components/ui/Tabs";
+import { routeService } from "@/lib/routing/route.service";
 
 /** Connexion / Inscription (W-Login). */
 export function LoginForm({ next }: { next?: string }) {
   const [mode, setMode] = useState<"login" | "signup">("login");
-  const router = useRouter();
   const login = mode === "login";
   return (
     <form
@@ -17,7 +16,8 @@ export function LoginForm({ next }: { next?: string }) {
       onSubmit={(e) => {
         e.preventDefault();
         // TODO(api): server action → authApi.login / authApi.register, then set the imb_session cookie.
-        router.push(next ?? "/");
+        if (next) routeService.navigate(next);
+        else routeService.toHome();
       }}
     >
       <div className="flex flex-col gap-1.5">

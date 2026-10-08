@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/cn";
 import { formatAriary } from "@/lib/format";
@@ -12,6 +12,8 @@ import { Switch } from "@/components/ui/Switch";
 import { FilterChip, RemovableChip } from "@/components/ui/Chip";
 import { Drawer } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
+import { routeService } from "@/lib/routing/route.service";
+import { ROUTES, withQuery } from "@/lib/routing/routes";
 
 const SORTS = [
   { value: "pertinence", label: "Pertinence" },
@@ -22,7 +24,6 @@ const SORTS = [
 ];
 
 function useQueryUpdater() {
-  const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   return (key: string, value: string | null) => {
@@ -30,7 +31,7 @@ function useQueryUpdater() {
     if (value) next.set(key, value);
     else next.delete(key);
     next.delete("page");
-    router.push(`${pathname}?${next.toString()}`, { scroll: false });
+    routeService.navigate(`${pathname}?${next.toString()}`, { scroll: false });
   };
 }
 
@@ -151,7 +152,7 @@ export function FilterPanel({
             <Icon name="sliders" size={18} />
             Filtres
           </b>
-          <Link href={`/catalogue?categorie=${categorySlug}`} className="text-[13px] font-bold no-underline">
+          <Link href={withQuery(ROUTES.catalogue, { categorie: categorySlug })} className="text-[13px] font-bold no-underline">
             Réinitialiser
           </Link>
         </div>

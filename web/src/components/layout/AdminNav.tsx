@@ -7,6 +7,7 @@ import { cn } from "@/lib/cn";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Drawer } from "@/components/ui/Modal";
 import { Logo } from "./Logo";
+import { ROUTES, withQuery } from "@/lib/routing/routes";
 
 interface AdminItem {
   label: string;
@@ -19,40 +20,40 @@ interface AdminItem {
 }
 
 const GROUPS: { title: string; items: AdminItem[] }[] = [
-  { title: "Pilotage", items: [{ label: "Dashboard", href: "/admin", icon: "chart", exact: true, primary: true }] },
+  { title: "Pilotage", items: [{ label: "Dashboard", href: ROUTES.admin, icon: "chart", exact: true, primary: true }] },
   {
     title: "Marketplace",
     items: [
-      { label: "Utilisateurs", href: "/admin/utilisateurs", icon: "users", primary: true },
-      { label: "Vendeurs", href: "/admin/utilisateurs?role=vendeurs", icon: "store" },
-      { label: "Produits", href: "/admin/produits", icon: "package", badge: "24", primary: true },
-      { label: "Catégories", href: "/admin/produits?vue=categories", icon: "layers" },
-      { label: "Commandes", href: "/admin/commandes", icon: "receipt", primary: true },
-      { label: "Transactions", href: "/admin/commandes?vue=transactions", icon: "wallet" },
+      { label: "Utilisateurs", href: ROUTES.adminUsers, icon: "users", primary: true },
+      { label: "Vendeurs", href: withQuery(ROUTES.adminUsers, { role: "vendeurs" }), icon: "store" },
+      { label: "Produits", href: ROUTES.adminProducts, icon: "package", badge: "24", primary: true },
+      { label: "Catégories", href: withQuery(ROUTES.adminProducts, { vue: "categories" }), icon: "layers" },
+      { label: "Commandes", href: ROUTES.adminOrders, icon: "receipt", primary: true },
+      { label: "Transactions", href: withQuery(ROUTES.adminOrders, { vue: "transactions" }), icon: "wallet" },
     ],
   },
   {
     title: "Modération",
     items: [
-      { label: "Avis", href: "/admin/signalements?type=avis", icon: "starO" },
-      { label: "Signalements", href: "/admin/signalements", icon: "flag", badge: "7", primary: true },
+      { label: "Avis", href: withQuery(ROUTES.adminReports, { type: "avis" }), icon: "starO" },
+      { label: "Signalements", href: ROUTES.adminReports, icon: "flag", badge: "7", primary: true },
     ],
   },
   {
     title: "Marketing",
     items: [
-      { label: "Promotions", href: "/admin?section=promotions", icon: "percent" },
-      { label: "Notifications", href: "/admin?section=notifications", icon: "bell" },
+      { label: "Promotions", href: withQuery(ROUTES.admin, { section: "promotions" }), icon: "percent" },
+      { label: "Notifications", href: withQuery(ROUTES.admin, { section: "notifications" }), icon: "bell" },
     ],
   },
-  { title: "Système", items: [{ label: "Paramètres", href: "/admin?section=parametres", icon: "settings" }] },
+  { title: "Système", items: [{ label: "Paramètres", href: withQuery(ROUTES.admin, { section: "parametres" }), icon: "settings" }] },
 ];
 
 function SidebarContent({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
   return (
     <div className="flex h-full flex-col px-3.5 py-5">
       <div className="px-1.5 pb-5">
-        <Link href="/admin" aria-label="In my bush — backoffice" className="no-underline" onClick={onNavigate}>
+        <Link href={ROUTES.admin} aria-label="In my bush — backoffice" className="no-underline" onClick={onNavigate}>
           <Logo tone="dark" />
         </Link>
       </div>
@@ -100,7 +101,7 @@ function SidebarContent({ pathname, onNavigate }: { pathname: string; onNavigate
           <span className="text-[12px] text-[#9AA78A]">Super admin</span>
         </div>
         <Link
-          href="/connexion"
+          href={ROUTES.login}
           aria-label="Se déconnecter"
           className="flex size-10 items-center justify-center rounded-[10px] text-[#C5D0B5] hover:bg-white/10 hover:text-white"
         >
@@ -126,11 +127,11 @@ export function AdminTopbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const crumbs: Record<string, string[]> = {
-    "/admin": ["Pilotage", "Dashboard"],
-    "/admin/produits": ["Marketplace", "Produits"],
-    "/admin/utilisateurs": ["Marketplace", "Utilisateurs"],
-    "/admin/commandes": ["Marketplace", "Commandes"],
-    "/admin/signalements": ["Modération", "Signalements"],
+    [ROUTES.admin]: ["Pilotage", "Dashboard"],
+    [ROUTES.adminProducts]: ["Marketplace", "Produits"],
+    [ROUTES.adminUsers]: ["Marketplace", "Utilisateurs"],
+    [ROUTES.adminOrders]: ["Marketplace", "Commandes"],
+    [ROUTES.adminReports]: ["Modération", "Signalements"],
   };
   const parts = crumbs[pathname] ?? ["Admin"];
   return (
@@ -153,7 +154,7 @@ export function AdminTopbar() {
         ))}
       </nav>
       <div className="flex-1" />
-      <form role="search" action="/admin/utilisateurs" className="hidden h-[42px] w-[360px] items-center gap-2 rounded-[10px] border-[1.5px] border-line-strong bg-bg px-3 text-[14px] text-muted md:flex">
+      <form role="search" action={ROUTES.adminUsers} className="hidden h-[42px] w-[360px] items-center gap-2 rounded-[10px] border-[1.5px] border-line-strong bg-bg px-3 text-[14px] text-muted md:flex">
         <Icon name="search" size={17} />
         <label htmlFor="admin-search" className="sr-only">
           Rechercher

@@ -8,6 +8,7 @@ import { getSellerOrders } from "@/lib/data/seller";
 import { formatAriary } from "@/lib/format";
 import { cn } from "@/lib/cn";
 import type { OrderStatus, SellerOrderCard } from "@/lib/types";
+import { ROUTES } from "@/lib/routing/routes";
 
 export const metadata: Metadata = { title: "Commandes reçues" };
 
@@ -19,7 +20,7 @@ const COLUMNS: { title: string; dot: string; statuses: OrderStatus[]; cta?: stri
 ];
 
 function OrderCard({ o, cta }: { o: SellerOrderCard; cta?: string }) {
-  const href = `/vendre/commandes/${o.id}`;
+  const href = ROUTES.sellerOrder(o.id);
   return (
     <article className={cn("flex flex-col gap-2 rounded-[14px] border bg-white p-3", o.urgent ? "border-orange-300" : "border-line")}>
       <div className="flex items-center gap-2">

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/layout/Logo";
 import { Icon } from "@/components/ui/Icon";
 import { NumberedSteps } from "@/components/ui/Navigation";
+import { ROUTES } from "@/lib/routing/routes";
 
 /** Checkout: minimal header (logo · steps · secure payment), no site navigation. */
 export default function CheckoutLayout({ children }: { children: React.ReactNode }) {
@@ -9,7 +10,7 @@ export default function CheckoutLayout({ children }: { children: React.ReactNode
     <div className="flex min-h-dvh flex-col">
       <header className="sticky top-0 z-40 border-b border-line bg-white">
         <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 md:h-20 md:px-8 xl:px-20">
-          <Link href="/" aria-label="In my bush — accueil" className="flex no-underline">
+          <Link href={ROUTES.home} aria-label="In my bush — accueil" className="flex no-underline">
             <span className="sm:hidden">
               <Logo markOnly size="sm" />
             </span>

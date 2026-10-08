@@ -9,6 +9,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Breadcrumb, StepBar } from "@/components/ui/Navigation";
 import { Textarea } from "@/components/ui/Form";
 import { useToast } from "@/components/ui/Toast";
+import { ROUTES } from "@/lib/routing/routes";
 
 const FLOW: OrderStatus[] = ["PENDING_CONFIRMATION", "ACCEPTED", "PREPARED", "IN_DELIVERY", "DELIVERED"];
 const CTA = ["Accepter la commande", "Marquer comme préparée", "Remettre au livreur", "Confirmer la livraison", "Commande terminée"];
@@ -37,7 +38,7 @@ export function SellerOrderHeader({ order }: { order: SellerOrderDetail }) {
     <>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1.5">
-          <Breadcrumb items={[{ label: "Commandes reçues", href: "/vendre/commandes" }, { label: order.number }]} />
+          <Breadcrumb items={[{ label: "Commandes reçues", href: ROUTES.sellerOrders }, { label: order.number }]} />
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="m-0 font-display text-[28px] font-extrabold tracking-[-0.025em] md:text-[34px]">{order.number}</h1>
             <OrderStatusPill status={status} side="seller" />

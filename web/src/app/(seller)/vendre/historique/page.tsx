@@ -10,6 +10,7 @@ import { Table, THead, Td, Th, Tr } from "@/components/ui/Table";
 import { getSalesHistory } from "@/lib/data/seller";
 import { formatAriary } from "@/lib/format";
 import type { SaleRow } from "@/lib/types";
+import { ROUTES } from "@/lib/routing/routes";
 
 export const metadata: Metadata = { title: "Historique des ventes" };
 
@@ -81,7 +82,7 @@ export default async function SalesHistoryPage() {
               <Tr key={r.id}>
                 <Td className="text-body">{r.date}</Td>
                 <Td>
-                  <Link href="/vendre/commandes/sord-24788" className="font-bold no-underline">
+                  <Link href={ROUTES.sellerOrder("sord-24788")} className="font-bold no-underline">
                     {r.orderNumber}
                   </Link>
                 </Td>

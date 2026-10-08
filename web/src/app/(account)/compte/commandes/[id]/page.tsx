@@ -10,6 +10,7 @@ import { PhotoPlaceholder } from "@/components/ui/Media";
 import { Breadcrumb, StepBar } from "@/components/ui/Navigation";
 import { getMyOrder } from "@/lib/data/account";
 import { formatAriary, formatDateTime } from "@/lib/format";
+import { ROUTES } from "@/lib/routing/routes";
 
 export const metadata: Metadata = { title: "Suivi de commande" };
 
@@ -24,7 +25,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
     <>
       <PageHeader
         size="md"
-        eyebrow={<Breadcrumb items={[{ label: "Mes commandes", href: "/compte" }, { label: order.number }]} />}
+        eyebrow={<Breadcrumb items={[{ label: "Mes commandes", href: ROUTES.account }, { label: order.number }]} />}
         title={`Commande ${order.number}`}
         titleAside={<OrderStatusPill status={order.status} />}
         subtitle={`Passée le ${formatDateTime(order.createdAt)} · ${order.itemCount} articles · ${order.parcels.length} vendeurs`}
@@ -55,7 +56,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 <span className="text-[13px] text-muted">{order.tracking.label}</span>
                 <b className="font-display text-[30px] leading-none">{order.tracking.slot}</b>
                 <span className="text-[14px] text-body">{order.tracking.courier}</span>
-                <ButtonLink href="/compte/messages" variant="soft" icon="msg" size="md" className="h-[42px] text-[14px]">
+                <ButtonLink href={ROUTES.accountMessages} variant="soft" icon="msg" size="md" className="h-[42px] text-[14px]">
                   Écrire au livreur
                 </ButtonLink>
               </div>
@@ -73,11 +74,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <section key={p.shop.slug} className="overflow-hidden rounded-xl border border-line bg-white">
               <div className="flex flex-wrap items-center gap-3 border-b border-divider bg-bg px-4 py-3 md:px-5">
                 <Avatar initials={p.shop.initials} color={p.shop.color} size={32} />
-                <Link href={`/vendeurs/${p.shop.slug}`} className="flex-1 text-[15px] font-bold text-ink no-underline hover:text-pomme-700">
+                <Link href={ROUTES.shop(p.shop.slug)} className="flex-1 text-[15px] font-bold text-ink no-underline hover:text-pomme-700">
                   {p.shop.name}
                 </Link>
                 <span className={`text-[13px] font-bold ${TONE[p.statusTone]}`}>{p.statusLabel}</span>
-                <ButtonLink href="/compte/messages" variant="neutral" icon="msg" size="sm" className="h-[34px] rounded-lg px-2.5 text-[13px]">
+                <ButtonLink href={ROUTES.accountMessages} variant="neutral" icon="msg" size="sm" className="h-[34px] rounded-lg px-2.5 text-[13px]">
                   Contacter
                 </ButtonLink>
               </div>

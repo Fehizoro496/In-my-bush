@@ -8,6 +8,7 @@ import { PhotoPlaceholder } from "@/components/ui/Media";
 import { Table, THead, Td, Th, Tr } from "@/components/ui/Table";
 import { getSellerOrder } from "@/lib/data/seller";
 import { formatAriary } from "@/lib/format";
+import { ROUTES } from "@/lib/routing/routes";
 
 export const metadata: Metadata = { title: "Commande reçue" };
 
@@ -80,7 +81,7 @@ export default async function OrderReceivedPage({ params }: { params: Promise<{ 
               {order.client.lastMessage}
               <span className="mt-1 block text-[11px] text-muted">{order.client.lastMessageAt}</span>
             </div>
-            <ButtonLink href="/compte/messages" variant="soft" icon="msg" className="h-10 text-[14px]">
+            <ButtonLink href={ROUTES.accountMessages} variant="soft" icon="msg" className="h-10 text-[14px]">
               Répondre
             </ButtonLink>
           </section>

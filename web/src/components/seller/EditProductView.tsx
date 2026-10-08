@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Visual } from "@/lib/types";
 import { Button, ButtonLink } from "@/components/ui/Button";
@@ -13,6 +12,8 @@ import { Switch } from "@/components/ui/Switch";
 import { TabList } from "@/components/ui/Tabs";
 import { useToast } from "@/components/ui/Toast";
 import { UNITS } from "./ProductForm";
+import { routeService } from "@/lib/routing/route.service";
+import { ROUTES } from "@/lib/routing/routes";
 
 export interface EditableProduct {
   id: string;
@@ -34,7 +35,6 @@ type Tab = "info" | "price" | "origin" | "delivery";
 
 /** Edit product: tabs, promotion, visibility, delete confirmation (W-Edit-Product). */
 export function EditProductView({ product }: { product: EditableProduct }) {
-  const router = useRouter();
   const toast = useToast();
   const [tab, setTab] = useState<Tab>("price");
   const [promo, setPromo] = useState(true);
@@ -85,7 +85,7 @@ export function EditProductView({ product }: { product: EditableProduct }) {
 
   return (
     <div className="flex flex-col gap-[18px]">
-      <Breadcrumb items={[{ label: "Mes produits", href: "/vendre/produits" }, { label: product.name }]} />
+      <Breadcrumb items={[{ label: "Mes produits", href: ROUTES.sellerProducts }, { label: product.name }]} />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <PhotoPlaceholder visual={product.visual} iconSize={28} className="size-16" />
@@ -95,14 +95,14 @@ export function EditProductView({ product }: { product: EditableProduct }) {
           </div>
         </div>
         <div className="flex gap-2.5">
-          <ButtonLink href="/produits/bredes-mafana" variant="neutral" icon="eye" className="px-3.5 text-[14px]">
+          <ButtonLink href={ROUTES.product("bredes-mafana")} variant="neutral" icon="eye" className="px-3.5 text-[14px]">
             Voir la fiche
           </ButtonLink>
           <Button
             className="text-[14px]"
             onClick={() => {
               toast.show({ title: "Modifications enregistrées", description: product.name });
-              router.push("/vendre/produits");
+              routeService.toSellerProducts();
             }}
           >
             Enregistrer
@@ -190,7 +190,7 @@ export function EditProductView({ product }: { product: EditableProduct }) {
               onClick={() => {
                 setConfirm(false);
                 toast.show({ tone: "info", title: "Produit supprimé", description: product.name });
-                router.push("/vendre/produits");
+                routeService.toSellerProducts();
               }}
             >
               Supprimer

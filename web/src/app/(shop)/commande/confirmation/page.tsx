@@ -6,6 +6,7 @@ import { Icon } from "@/components/ui/Icon";
 import { StepBar } from "@/components/ui/Navigation";
 import { getConfirmation } from "@/lib/data/cart";
 import { formatAriary } from "@/lib/format";
+import { ROUTES } from "@/lib/routing/routes";
 
 export const metadata: Metadata = { title: "Commande confirmée" };
 
@@ -62,10 +63,10 @@ export default async function ConfirmationPage() {
             ))}
           </div>
           <div className="flex flex-wrap gap-3">
-            <ButtonLink href={`/compte/commandes/${c.orderId}`} icon="truck" size="lg" className="h-[54px] rounded-[14px]">
+            <ButtonLink href={ROUTES.accountOrder(c.orderId)} icon="truck" size="lg" className="h-[54px] rounded-[14px]">
               Suivre ma commande
             </ButtonLink>
-            <ButtonLink href="/" variant="neutral" size="lg" className="h-[54px] rounded-[14px]">
+            <ButtonLink href={ROUTES.home} variant="neutral" size="lg" className="h-[54px] rounded-[14px]">
               Continuer mes achats
             </ButtonLink>
           </div>

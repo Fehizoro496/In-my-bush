@@ -17,6 +17,7 @@ import { Icon } from "@/components/ui/Icon";
 import { getCatalog } from "@/lib/data/catalog";
 import { formatNumber } from "@/lib/format";
 import type { CatalogFilters } from "@/lib/types";
+import { ROUTES, withQuery } from "@/lib/routing/routes";
 
 export const metadata: Metadata = { title: "Catalogue" };
 
@@ -40,7 +41,7 @@ export default async function CataloguePage({ searchParams }: { searchParams: SP
     q.set("categorie", slug);
     if (filters.tri) q.set("tri", filters.tri);
     if (p > 1) q.set("page", String(p));
-    return `/catalogue?${q.toString()}`;
+    return withQuery(ROUTES.catalogue, q);
   };
   const shown = data.products.items.length;
 
@@ -48,7 +49,7 @@ export default async function CataloguePage({ searchParams }: { searchParams: SP
     <main className="pt-4 pb-16 lg:pt-6">
       <Container className="flex flex-col gap-5 lg:gap-6">
         <div className="flex flex-col gap-2.5">
-          <Breadcrumb className="hidden lg:block" items={[{ label: "Accueil", href: "/" }, { label: data.title }]} />
+          <Breadcrumb className="hidden lg:block" items={[{ label: "Accueil", href: ROUTES.home }, { label: data.title }]} />
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="flex flex-col gap-0.5 lg:flex-row lg:items-baseline lg:gap-3.5">
               <h1 className="m-0 font-display text-[30px] font-extrabold tracking-[-0.02em] lg:text-[40px] lg:tracking-[-0.03em]">
@@ -69,7 +70,7 @@ export default async function CataloguePage({ searchParams }: { searchParams: SP
         </div>
 
         {/* Tablet/phone search + subcategory pills (T-Catalog) */}
-        <form role="search" action="/recherche" className="flex h-[50px] items-center gap-2.5 rounded-[14px] border-[1.5px] border-line-strong bg-white px-3.5 text-muted lg:hidden">
+        <form role="search" action={ROUTES.search} className="flex h-[50px] items-center gap-2.5 rounded-[14px] border-[1.5px] border-line-strong bg-white px-3.5 text-muted lg:hidden">
           <Icon name="search" size={20} />
           <label htmlFor="cat-q" className="sr-only">
             Rechercher dans {data.title}

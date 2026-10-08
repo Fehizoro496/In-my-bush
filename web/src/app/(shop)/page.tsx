@@ -7,6 +7,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { getCategories, getHome } from "@/lib/data/catalog";
 import { formatRating, initials } from "@/lib/format";
+import { ROUTES, withQuery } from "@/lib/routing/routes";
 
 export default async function HomePage() {
   const [home, categories] = await Promise.all([getHome(), getCategories()]);
@@ -32,11 +33,11 @@ export default async function HomePage() {
               </p>
             </div>
             <div className="relative flex flex-wrap items-center gap-3">
-              <ButtonLink href="/catalogue" size="lg" iconRight="arrowR">
+              <ButtonLink href={ROUTES.catalogue} size="lg" iconRight="arrowR">
                 Explorer le marché
               </ButtonLink>
               <Link
-                href="/vendre"
+                href={ROUTES.seller}
                 className="flex h-13 items-center rounded-md border-[1.5px] border-[rgba(244,250,232,0.4)] px-[22px] text-[16px] font-bold text-pomme-50 no-underline hover:bg-white/10 hover:text-pomme-50"
               >
                 Vendre mes produits
@@ -45,7 +46,7 @@ export default async function HomePage() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-1 lg:gap-6">
             <Link
-              href="/catalogue?categorie=fruits-legumes"
+              href={withQuery(ROUTES.catalogue, { categorie: "fruits-legumes" })}
               className="relative flex min-h-[180px] flex-col justify-between gap-6 overflow-hidden rounded-[24px] bg-orange-50 p-6 text-ink no-underline hover:text-ink lg:p-7"
             >
               <span className="absolute right-5 bottom-4 flex text-orange-500 opacity-50" aria-hidden>
@@ -62,7 +63,7 @@ export default async function HomePage() {
               </span>
             </Link>
             <Link
-              href="/catalogue?categorie=cosmetiques-bio"
+              href={withQuery(ROUTES.catalogue, { categorie: "cosmetiques-bio" })}
               className="relative flex min-h-[180px] flex-col justify-between gap-6 overflow-hidden rounded-[24px] bg-pomme-100 p-6 text-ink no-underline hover:text-ink lg:p-7"
             >
               <span className="absolute right-5 bottom-4 flex text-pomme-600 opacity-50" aria-hidden>
@@ -101,7 +102,7 @@ export default async function HomePage() {
           <SectionHeader
             title="Catégories"
             action={
-              <Link href="/categories" className="text-[15px] font-bold no-underline">
+              <Link href={ROUTES.categories} className="text-[15px] font-bold no-underline">
                 Tout le catalogue
               </Link>
             }
@@ -110,7 +111,7 @@ export default async function HomePage() {
             {categories.map((c) => (
               <li key={c.slug} className="w-[104px] shrink-0 md:w-auto">
                 <Link
-                  href={`/catalogue?categorie=${c.slug}`}
+                  href={withQuery(ROUTES.catalogue, { categorie: c.slug })}
                   className="flex h-full flex-col items-center gap-2 rounded-xl text-ink no-underline hover:text-ink lg:gap-3 lg:border lg:border-line lg:bg-white lg:px-2 lg:py-5 lg:hover:border-pomme-300"
                 >
                   <span
@@ -139,7 +140,7 @@ export default async function HomePage() {
               </span>
             }
             action={
-              <Link href="/catalogue" className="text-[15px] font-bold text-orange-700 no-underline hover:text-orange-800">
+              <Link href={ROUTES.catalogue} className="text-[15px] font-bold text-orange-700 no-underline hover:text-orange-800">
                 Toutes les promos
               </Link>
             }
@@ -179,7 +180,7 @@ export default async function HomePage() {
             {home.nearby.map((s) => (
               <Link
                 key={s.slug}
-                href={`/vendeurs/${s.slug}`}
+                href={ROUTES.shop(s.slug)}
                 className="flex items-center gap-3.5 rounded-[18px] border border-line bg-white p-4 text-ink no-underline hover:border-pomme-300 hover:text-ink"
               >
                 <span
@@ -209,7 +210,7 @@ export default async function HomePage() {
           <SectionHeader
             title="Producteurs populaires"
             action={
-              <Link href="/categories" className="text-[15px] font-bold no-underline">
+              <Link href={ROUTES.categories} className="text-[15px] font-bold no-underline">
                 Tous les producteurs
               </Link>
             }
@@ -239,7 +240,7 @@ export default async function HomePage() {
                 <span className="text-[15px] font-semibold">{t}</span>
               </div>
             ))}
-            <ButtonLink href="/vendre/ouvrir-ma-boutique" variant="dark" size="lg" iconRight="arrowR" className="mt-1">
+            <ButtonLink href={ROUTES.sellerOnboarding} variant="dark" size="lg" iconRight="arrowR" className="mt-1">
               Ouvrir ma boutique
             </ButtonLink>
           </div>

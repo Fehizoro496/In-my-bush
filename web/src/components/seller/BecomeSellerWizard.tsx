@@ -8,6 +8,7 @@ import { FilterChip } from "@/components/ui/Chip";
 import { Input, Textarea } from "@/components/ui/Form";
 import { Icon } from "@/components/ui/Icon";
 import { SellerCard } from "./SellerCard";
+import { ROUTES } from "@/lib/routing/routes";
 
 const STEPS = [
   { title: "Votre boutique", detail: "Nom, activité, présentation" },
@@ -154,10 +155,10 @@ export function BecomeSellerWizard() {
               Ajoutez votre premier produit. Il sera relu par l’équipe In my bush sous 24 h avant sa mise en ligne.
             </p>
             <div className="flex flex-wrap gap-2.5">
-              <ButtonLink href="/vendre/produits/nouveau" icon="plus" size="lg" className="px-[22px]">
+              <ButtonLink href={ROUTES.sellerProductNew} icon="plus" size="lg" className="px-[22px]">
                 Ajouter un produit
               </ButtonLink>
-              <ButtonLink href="/vendre" variant="neutral" size="lg" className="px-[22px]">
+              <ButtonLink href={ROUTES.seller} variant="neutral" size="lg" className="px-[22px]">
                 Mon tableau de bord
               </ButtonLink>
             </div>

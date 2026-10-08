@@ -13,6 +13,7 @@ import { PhotoPlaceholder } from "@/components/ui/Media";
 import { QuantityStepper } from "@/components/ui/QuantityStepper";
 import { Switch } from "@/components/ui/Switch";
 import { Table, THead, Td, Th, Tr } from "@/components/ui/Table";
+import { ROUTES } from "@/lib/routing/routes";
 
 type Level = "ok" | "low" | "out" | "wait" | "draft";
 const LEVEL: Record<Level, { label: string; tone: StatusTone }> = {
@@ -132,7 +133,7 @@ export function StockTable({ rows }: { rows: SellerProductRow[] }) {
                     <div className="flex items-center gap-3">
                       <PhotoPlaceholder visual={r.visual} iconSize={20} className="size-11" rounded="rounded-[10px]" />
                       <div className="flex flex-col">
-                        <Link href={`/vendre/produits/${r.id}`} className="font-semibold text-ink no-underline hover:text-pomme-700">
+                        <Link href={ROUTES.sellerProduct(r.id)} className="font-semibold text-ink no-underline hover:text-pomme-700">
                           {r.name}
                         </Link>
                         <span className="text-[12px] text-muted">{r.category}</span>
@@ -172,7 +173,7 @@ export function StockTable({ rows }: { rows: SellerProductRow[] }) {
                   <Td>
                     <div className="flex justify-end gap-0.5">
                       <Link
-                        href={`/vendre/produits/${r.id}`}
+                        href={ROUTES.sellerProduct(r.id)}
                         aria-label={`Modifier ${r.name}`}
                         className="flex size-9 items-center justify-center rounded-lg text-body hover:bg-sand hover:text-ink"
                       >

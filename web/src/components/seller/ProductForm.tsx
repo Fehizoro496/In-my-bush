@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/cn";
 import type { ProductSummary } from "@/lib/types";
@@ -10,6 +9,8 @@ import { Icon, type IconName } from "@/components/ui/Icon";
 import { Breadcrumb } from "@/components/ui/Navigation";
 import { ProductCard } from "@/components/product/ProductCard";
 import { useToast } from "@/components/ui/Toast";
+import { routeService } from "@/lib/routing/route.service";
+import { ROUTES } from "@/lib/routing/routes";
 
 export const UNITS = [
   { value: "KG", label: "kg" },
@@ -37,7 +38,6 @@ const SHIPPING: { key: string; icon: IconName; title: string; detail: string }[]
 
 /** "Ajouter un produit" form with live buyer preview and publish checklist (W-Add-Product). */
 export function ProductForm() {
-  const router = useRouter();
   const toast = useToast();
   const [name, setName] = useState("Brèdes mafana");
   const [price, setPrice] = useState("1000");
@@ -78,14 +78,14 @@ export function ProductForm() {
       title: draft ? "Brouillon enregistré" : "Produit envoyé en validation",
       description: draft ? name : "L’équipe In my bush le relit sous 24 h.",
     });
-    if (!draft) router.push("/vendre/produits");
+    if (!draft) routeService.toSellerProducts();
   };
 
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1.5">
-          <Breadcrumb items={[{ label: "Mes produits", href: "/vendre/produits" }, { label: "Nouveau produit" }]} />
+          <Breadcrumb items={[{ label: "Mes produits", href: ROUTES.sellerProducts }, { label: "Nouveau produit" }]} />
           <h1 className="m-0 font-display text-[28px] font-extrabold tracking-[-0.025em] md:text-[36px]">Ajouter un produit</h1>
         </div>
         <div className="flex gap-2.5">

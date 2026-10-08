@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Container, PageHeader } from "@/components/layout/Container";
 import { Icon } from "@/components/ui/Icon";
 import { getCategories, getRegions } from "@/lib/data/catalog";
+import { ROUTES, withQuery } from "@/lib/routing/routes";
 
 export const metadata: Metadata = { title: "Toutes les catégories" };
 
@@ -16,7 +17,7 @@ export default async function CategoriesPage() {
           {categories.map((c) => (
             <article key={c.slug} className="flex flex-col overflow-hidden rounded-[24px] border border-line bg-white">
               <Link
-                href={`/catalogue?categorie=${c.slug}`}
+                href={withQuery(ROUTES.catalogue, { categorie: c.slug })}
                 className="relative flex h-[150px] flex-col justify-end overflow-hidden px-[22px] py-5 no-underline"
                 style={{ background: c.visual?.bg, color: c.visual?.fg ?? "#1F2318" }}
               >
@@ -31,14 +32,14 @@ export default async function CategoriesPage() {
                   {c.children?.map((s) => (
                     <Link
                       key={s.slug}
-                      href={`/catalogue?categorie=${c.slug}&sous=${s.slug}`}
+                      href={withQuery(ROUTES.catalogue, { categorie: c.slug, sous: s.slug })}
                       className="inline-flex h-[34px] items-center rounded-full bg-sand px-3 text-[13px] font-semibold text-ink no-underline hover:bg-divider hover:text-ink"
                     >
                       {s.name}
                     </Link>
                   ))}
                 </div>
-                <Link href={`/catalogue?categorie=${c.slug}`} className="inline-flex items-center gap-1.5 self-start text-[14px] font-bold no-underline">
+                <Link href={withQuery(ROUTES.catalogue, { categorie: c.slug })} className="inline-flex items-center gap-1.5 self-start text-[14px] font-bold no-underline">
                   Tout voir <Icon name="arrowR" size={15} />
                 </Link>
               </div>
@@ -51,7 +52,7 @@ export default async function CategoriesPage() {
             {regions.map((r) => (
               <Link
                 key={r.name}
-                href={`/catalogue?region=${encodeURIComponent(r.name)}`}
+                href={withQuery(ROUTES.catalogue, { region: r.name })}
                 className="inline-flex h-11 items-center gap-2 rounded-full border-[1.5px] border-line-strong bg-white px-4 text-[14px] font-semibold text-ink no-underline hover:border-pomme-500 hover:text-ink"
               >
                 <Icon name="pin" size={15} />

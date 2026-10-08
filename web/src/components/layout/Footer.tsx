@@ -1,41 +1,42 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
+import { ROUTES, withQuery } from "@/lib/routing/routes";
 
 const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: "Acheter",
     links: [
-      { label: "Catalogue", href: "/catalogue" },
-      { label: "Promotions", href: "/catalogue?tri=pertinence&promo=1" },
-      { label: "Producteurs", href: "/categories" },
-      { label: "Près de chez vous", href: "/catalogue?categorie=produits-locaux" },
+      { label: "Catalogue", href: ROUTES.catalogue },
+      { label: "Promotions", href: withQuery(ROUTES.catalogue, { tri: "pertinence", promo: "1" }) },
+      { label: "Producteurs", href: ROUTES.categories },
+      { label: "Près de chez vous", href: withQuery(ROUTES.catalogue, { categorie: "produits-locaux" }) },
     ],
   },
   {
     title: "Vendre",
     links: [
-      { label: "Ouvrir ma boutique", href: "/vendre/ouvrir-ma-boutique" },
-      { label: "Tarifs & commission", href: "/vendre/ouvrir-ma-boutique#tarifs" },
-      { label: "Livraison & retrait", href: "/vendre/boutique" },
-      { label: "Guide vendeur", href: "/vendre" },
+      { label: "Ouvrir ma boutique", href: ROUTES.sellerOnboarding },
+      { label: "Tarifs & commission", href: `${ROUTES.sellerOnboarding}#tarifs` },
+      { label: "Livraison & retrait", href: ROUTES.sellerShop },
+      { label: "Guide vendeur", href: ROUTES.seller },
     ],
   },
   {
     title: "Aide",
     links: [
-      { label: "Livraison", href: "/aide/livraison" },
-      { label: "Paiement", href: "/aide/paiement" },
-      { label: "Retours", href: "/aide/retours" },
-      { label: "Contact", href: "/aide/contact" },
+      { label: "Livraison", href: ROUTES.helpDelivery },
+      { label: "Paiement", href: ROUTES.helpPayment },
+      { label: "Retours", href: ROUTES.helpReturns },
+      { label: "Contact", href: ROUTES.helpContact },
     ],
   },
   {
     title: "In my bush",
     links: [
-      { label: "À propos", href: "/a-propos" },
-      { label: "Charte bio", href: "/charte" },
-      { label: "Presse", href: "/presse" },
-      { label: "Carrières", href: "/carrieres" },
+      { label: "À propos", href: ROUTES.about },
+      { label: "Charte bio", href: ROUTES.charter },
+      { label: "Presse", href: ROUTES.press },
+      { label: "Carrières", href: ROUTES.careers },
     ],
   },
 ];

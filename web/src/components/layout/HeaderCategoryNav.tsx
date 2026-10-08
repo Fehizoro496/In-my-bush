@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/cn";
+import { ROUTES, isRoute, withQuery } from "@/lib/routing/routes";
 
 export interface HeaderCategory {
   name: string;
@@ -13,7 +14,7 @@ export interface HeaderCategory {
 export function HeaderCategoryLinks({ categories }: { categories: HeaderCategory[] }) {
   const pathname = usePathname();
   const params = useSearchParams();
-  const active = pathname === "/catalogue" ? (params.get("categorie") ?? "fruits-legumes") : null;
+  const active = isRoute(pathname, ROUTES.catalogue, { exact: true }) ? (params.get("categorie") ?? "fruits-legumes") : null;
   return <CategoryLinks categories={categories} active={active} />;
 }
 
@@ -25,7 +26,7 @@ export function CategoryLinks({ categories, active }: { categories: HeaderCatego
         return (
           <li key={c.slug} className="shrink-0">
             <Link
-              href={`/catalogue?categorie=${c.slug}`}
+              href={withQuery(ROUTES.catalogue, { categorie: c.slug })}
               aria-current={on ? "page" : undefined}
               className={cn(
                 "flex min-h-11 items-center whitespace-nowrap no-underline hover:text-pomme-700",

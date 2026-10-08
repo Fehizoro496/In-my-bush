@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { SearchResult } from "@/lib/types";
 import { FilterChip } from "@/components/ui/Chip";
 import { Icon } from "@/components/ui/Icon";
+import { ROUTES, withQuery } from "@/lib/routing/routes";
 
 export function SearchRefine({ options }: { options: string[] }) {
   const [on, setOn] = useState<Record<string, boolean>>({ [options[0]!]: true });
@@ -25,7 +26,7 @@ export function SearchBox({ query, suggestions, recent }: { query: string; sugge
   const [open, setOpen] = useState(false);
   return (
     <div className="relative" onBlur={(e) => !e.currentTarget.contains(e.relatedTarget) && setOpen(false)}>
-      <form role="search" action="/recherche" className="flex h-[52px] items-center gap-2.5 rounded-md border-[1.5px] border-pomme-600 bg-white px-3.5 shadow-[0_0_0_4px_rgba(140,198,63,0.22)]">
+      <form role="search" action={ROUTES.search} className="flex h-[52px] items-center gap-2.5 rounded-md border-[1.5px] border-pomme-600 bg-white px-3.5 shadow-[0_0_0_4px_rgba(140,198,63,0.22)]">
         <Icon name="search" size={20} className="text-muted" />
         <label htmlFor="search-q" className="sr-only">
           Rechercher
@@ -57,7 +58,7 @@ export function SearchBox({ query, suggestions, recent }: { query: string; sugge
               key={i}
               role="option"
               aria-selected={i === 0}
-              href={`/recherche?q=${encodeURIComponent(`${s.hit}${s.rest}`.trim())}`}
+              href={withQuery(ROUTES.search, { q: `${s.hit}${s.rest}`.trim() })}
               className="flex min-h-11 items-center gap-3 rounded-[10px] px-3 text-ink no-underline hover:bg-pomme-100 hover:text-ink aria-selected:bg-pomme-100"
             >
               <Icon name={s.icon} size={17} className="text-disabled" />
@@ -73,7 +74,7 @@ export function SearchBox({ query, suggestions, recent }: { query: string; sugge
             {recent.map((r) => (
               <Link
                 key={r}
-                href={`/recherche?q=${encodeURIComponent(r)}`}
+                href={withQuery(ROUTES.search, { q: r })}
                 className="inline-flex h-[30px] items-center gap-1.5 rounded-full bg-sand px-2.5 text-[13px] text-ink no-underline hover:text-ink"
               >
                 <Icon name="clock" size={13} />

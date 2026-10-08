@@ -3,6 +3,7 @@ import { Container } from "@/components/layout/Container";
 import { SiteChrome } from "@/components/layout/SiteChrome";
 import { ButtonLink } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
+import { ROUTES, withQuery } from "@/lib/routing/routes";
 
 const POPULAR = ["Miel de litchi", "Paniers de saison", "Vanille", "Riz rouge"];
 
@@ -20,10 +21,10 @@ export default function NotFound() {
               Le produit a peut-être été retiré par son producteur, ou le lien est incorrect.
             </p>
             <div className="flex flex-wrap gap-3">
-              <ButtonLink href="/" icon="home" size="lg" className="px-[22px]">
+              <ButtonLink href={ROUTES.home} icon="home" size="lg" className="px-[22px]">
                 Retour à l’accueil
               </ButtonLink>
-              <ButtonLink href="/categories" variant="neutral" size="lg" className="px-[22px]">
+              <ButtonLink href={ROUTES.categories} variant="neutral" size="lg" className="px-[22px]">
                 Parcourir les catégories
               </ButtonLink>
             </div>
@@ -32,7 +33,7 @@ export default function NotFound() {
               {POPULAR.map((p) => (
                 <Link
                   key={p}
-                  href={`/recherche?q=${encodeURIComponent(p)}`}
+                  href={withQuery(ROUTES.search, { q: p })}
                   className="inline-flex h-[34px] items-center rounded-full bg-pomme-100 px-3 text-[13px] font-semibold text-pomme-800 no-underline"
                 >
                   {p}
