@@ -13,7 +13,7 @@ Ces règles s’appliquent à tout assistant IA qui travaille sur ce dépôt.
 
 - Toute nouvelle fonctionnalité est livrée avec ses tests automatisés.
 - Lancer les tests avant de considérer la fonctionnalité comme terminée, et signaler tout échec.
-- API : `./mvnw test` depuis `api/`. Mobile : `flutter analyze && flutter test` depuis `mobile/`.
+- API : `./mvnw test` depuis `api/`. Mobile : `flutter analyze && flutter test` depuis `mobile/`. Web : `npm run lint && npm test` depuis `web/`.
 
 ## Repères
 
