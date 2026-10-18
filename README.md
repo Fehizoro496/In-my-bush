@@ -19,7 +19,7 @@ psql -U postgres -c "CREATE DATABASE inmybush OWNER inmybush"
 # 2. API (http://localhost:8080, Swagger sur /swagger-ui.html)
 cd api && ./mvnw spring-boot:run
 
-# 3. Web (http://localhost:3000)
+# 3. Web (http://localhost:3000) : renseigner SESSION_SECRET (au moins 32 caractères) dans .env.local avant de lancer
 cd web && cp .env.example .env.local && npm install && npm run dev
 
 # 4. Mobile
@@ -31,7 +31,9 @@ cd mobile && flutter pub get && flutter run
 ### API (depuis `api/`)
 
 ```bash
-# Lancer avec les données de test (comptes, boutiques, produits, commandes)
+# Lancer avec les données de test : comptes (dont admin@inmybush.mg), boutiques, produits à modérer,
+# commandes dans chaque statut, signalements et journal d'administration.
+# Fichiers : src/main/resources/db/dev/ (le mot de passe commun figure en tête de R__dev_seed.sql)
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 
 # Vider la base : supprime toutes les tables. Arrêter l'API avant ;
@@ -44,6 +46,19 @@ cd mobile && flutter pub get && flutter run
 # État des migrations Flyway (lecture seule)
 ./mvnw -PresetDb flyway:info
 ```
+
+#### Comptes de test (profil `dev` uniquement)
+
+Tous les comptes de test partagent le mot de passe `Inmybush2026!`. On se connecte avec l'e-mail ou le téléphone.
+
+| Rôle | E-mail | Téléphone |
+|---|---|---|
+| Administrateur | `admin@inmybush.mg` | `+261340000001` |
+| Second administrateur | `miora@inmybush.mg` | `+261340100108` |
+| Vendeur (Le Jardin de Hery) | `hery@example.mg` | `+261341234567` |
+| Acheteur | `fara@example.mg` | `+261329876543` |
+
+Le backoffice est sur http://localhost:3000/admin. Ces comptes n'existent pas sans le profil `dev` : ne jamais l'activer en production.
 
 Réglages locaux et secrets : copier `api/.env.example` vers `api/.env` (ignoré par git), lu au démarrage depuis `api/`.
 
