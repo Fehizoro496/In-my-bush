@@ -3,7 +3,7 @@ import { routeService } from "./route.service";
 import { ROUTES } from "./routes";
 
 describe("routeService", () => {
-  const router = { push: vi.fn(), replace: vi.fn() };
+  const router = { push: vi.fn(), replace: vi.fn(), refresh: vi.fn() };
 
   beforeEach(() => {
     router.push.mockClear();
@@ -16,6 +16,11 @@ describe("routeService", () => {
     const expected = Object.keys(ROUTES).map((name) => `to${name[0].toUpperCase()}${name.slice(1)}`);
     const methods = Object.keys(routeService).filter((k) => /^to[A-Z]/.test(k));
     expect(methods.sort()).toEqual(expected.sort());
+  });
+
+  it("renders the current page again", () => {
+    routeService.refresh();
+    expect(router.refresh).toHaveBeenCalledOnce();
   });
 
   it("pushes the route on the router", () => {

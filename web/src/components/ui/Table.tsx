@@ -1,11 +1,19 @@
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps, CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-/** Data table wrapper: horizontal scroll on small screens. */
-export function Table({ className, children, minWidth = 720, ...rest }: ComponentProps<"table"> & { minWidth?: number }) {
+/**
+ * Data table wrapper: horizontal scroll on small screens. With `fill`, from 1024 px the table takes
+ * the height left in its flex column and never scrolls: it shows the rows that fit (see AdminTableCard).
+ * Its cells stay on one line so that every row has the same height; long text columns are truncated.
+ */
+export function Table({ className, children, minWidth = 720, fill, ...rest }: ComponentProps<"table"> & { minWidth?: number; fill?: boolean }) {
   return (
-    <div className="w-full overflow-x-auto">
-      <table className={cn("w-full border-collapse text-[14px]", className)} style={{ minWidth }} {...rest}>
+    <div className={cn("w-full overflow-x-auto", fill && "min-h-0 flex-1 lg:overflow-hidden")}>
+      <table
+        className={cn("w-full border-collapse text-[14px]", fill ? "min-w-(--table-min) lg:min-w-0 lg:[&_td]:whitespace-nowrap" : undefined, className)}
+        style={fill ? ({ "--table-min": `${minWidth}px` } as CSSProperties) : { minWidth }}
+        {...rest}
+      >
         {children}
       </table>
     </div>

@@ -5,7 +5,7 @@ Site public, espace compte / vendeur et backoffice `/admin`, dans un seul projet
 ## Démarrer
 
 ```bash
-cp .env.example .env.local   # NEXT_PUBLIC_AUTH_BYPASS=true pour ouvrir /compte, /vendre, /admin en dev
+cp .env.example .env.local   # puis renseigner SESSION_SECRET (au moins 32 caractères)
 npm install
 npm run dev                  # http://localhost:3000
 ```
@@ -16,14 +16,18 @@ npm run dev                  # http://localhost:3000
 | `npm run build` | build de production |
 | `npm start` | sert le build |
 | `npm run lint` | ESLint (config `eslint-config-next`, flat config) |
+| `npm test` | tests Vitest |
 
 ### Variables d’environnement
 
 | Variable | Défaut | Rôle |
 |---|---|---|
 | `NEXT_PUBLIC_API_URL` | `http://localhost:8080/api/v1` | base de l’API Spring Boot |
-| `NEXT_PUBLIC_USE_MOCKS` | `true` | `true` = données de `src/lib/mock`, `false` = appels API |
-| `NEXT_PUBLIC_AUTH_BYPASS` | — | `true` = pas de contrôle de session (dev uniquement, **jamais en prod**) |
+| `API_URL` | — | base de l’API vue du serveur Next.js, si elle diffère de `NEXT_PUBLIC_API_URL` |
+| `SESSION_SECRET` | — | **obligatoire** : secret d’au moins 32 caractères qui chiffre le cookie de session |
+| `NEXT_PUBLIC_USE_MOCKS` | `false` | `true` = les pages publiques, compte et vendeur pas encore raccordées affichent `src/lib/mock` (dev uniquement, ignoré en production). Le backoffice et la connexion utilisent toujours l’API |
+
+Le backoffice demande un compte `ADMIN` : lancer l’API avec le profil `dev` crée `admin@inmybush.mg` (mot de passe dans `api/src/main/resources/db/dev/R__dev_seed.sql`).
 
 ## Structure
 

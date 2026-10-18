@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { getCounters, getCurrentUser } from "@/lib/data/account";
 import { getCategories } from "@/lib/data/catalog";
+import { requireUser } from "@/lib/auth/require-user";
 import { initials } from "@/lib/format";
 import { AccountNav } from "./AccountNav";
 import { CompactHeader } from "./CompactHeader";
@@ -35,7 +36,7 @@ export async function SiteChrome({ children, footer = true }: { children: ReactN
 
 /** Account / seller layout: AccountNav sidebar + content column. */
 export async function AccountShell({ children }: { children: ReactNode }) {
-  const [user, counters] = await Promise.all([getCurrentUser(), getCounters()]);
+  const [user, counters] = await Promise.all([requireUser(), getCounters()]);
   const isSeller = user.roles.includes("SELLER");
   return (
     <Container className="flex flex-col gap-5 pt-5 pb-16 md:pt-6 lg:flex-row lg:items-start lg:gap-8 lg:pt-8">

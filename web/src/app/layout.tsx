@@ -4,6 +4,9 @@ import { ToastProvider } from "@/components/ui/Toast";
 import { RouteServiceBinder } from "@/lib/routing/RouteServiceBinder";
 import "./globals.css";
 
+// Authenticated data and the live catalogue are loaded at request time, never during CI builds.
+export const dynamic = "force-dynamic";
+
 /*
  * Bricolage Grotesque (display) + Figtree (body), variable fonts self-hosted in
  * ./fonts (SIL OFL). Equivalent to next/font/google, which needs access to

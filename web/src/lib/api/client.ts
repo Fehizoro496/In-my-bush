@@ -6,8 +6,12 @@
  */
 import "server-only";
 import type { Page, ProblemDetails } from "@/lib/types";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { readSession, renewSession, saveSession } from "@/lib/auth/session";
+import { safeNext, sessionEndPath, sessionRenewPath } from "@/lib/auth/session-core";
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080/api/v1";
+export const API_URL = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080/api/v1";
 
 /** Name of the cookie holding the access token (httpOnly, set by /connexion). */
 export const SESSION_COOKIE = "imb_session";
@@ -57,8 +61,7 @@ async function resolveToken(explicit?: string | null): Promise<string | null> {
   if (explicit !== undefined) return explicit;
   if (typeof window !== "undefined") return null; // browser: the cookie is httpOnly, calls go through server actions/route handlers
   try {
-    const { cookies } = await import("next/headers");
-    return (await cookies()).get(SESSION_COOKIE)?.value ?? null;
+    return (await readSession())?.accessToken ?? null;
   } catch {
     return null;
   }
@@ -69,19 +72,37 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
   const token = await resolveToken(options.token);
   const isForm = typeof FormData !== "undefined" && body instanceof FormData;
 
-  const res = await fetch(buildUrl(path, query), {
+  const send = (access: string | null) => fetch(buildUrl(path, query), {
     method,
     signal,
     next,
-    cache,
+    cache: cache ?? "no-store",
     headers: {
       Accept: "application/json, application/problem+json",
       ...(body !== undefined && !isForm ? { "Content-Type": "application/json" } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(access ? { Authorization: `Bearer ${access}` } : {}),
     },
     body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body),
   });
 
+  let res = await send(token);
+  if (res.status === 401 && options.token === undefined && !path.startsWith("/auth/")) {
+    const session = await readSession();
+    // Signed out: the 401 is thrown below. Public pages render without a user, requireUser() sends to the login page.
+    if (session) {
+      const nextPath = safeNext((await headers()).get("x-imb-path"));
+      let renewed;
+      try { renewed = await renewSession(session); }
+      catch { redirect(sessionEndPath(nextPath)); }
+      try { await saveSession(renewed); }
+      catch {
+        // Server Components cannot write cookies. Persist the coalesced rotation in a route handler.
+        redirect(sessionRenewPath(nextPath));
+      }
+      res = await send(renewed.accessToken);
+      if (res.status === 401) redirect(sessionEndPath(nextPath));
+    }
+  }
   if (!res.ok) {
     let problem: ProblemDetails = { title: res.statusText || "Erreur", status: res.status };
     const type = res.headers.get("content-type") ?? "";
