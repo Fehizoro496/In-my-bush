@@ -1,7 +1,7 @@
 import "server-only";
-import { catalogApi } from "@/lib/api/catalog";
-import { CATEGORIES, REGIONS, SHOP_REVIEWS } from "@/lib/mock/catalog";
-import { HOME, buildCatalog, buildProductDetail, buildSearch, buildShop, productReviews, similarProducts } from "@/lib/mock/views";
+import { catalogApi } from "../api/catalog";
+import { CATEGORIES, REGIONS, SHOP_REVIEWS } from "../mock/catalog";
+import { HOME, buildCatalog, buildProductDetail, buildSearch, buildShop, productReviews, similarProducts } from "../mock/views";
 import type { CatalogFilters } from "@/lib/types";
 import { USE_MOCKS, mock } from "./config";
 
@@ -15,9 +15,23 @@ export async function getRegions() {
 }
 
 /** Home page blocks (rails, promos, nearby producers…). */
-export async function getHome() {
-  // TODO(api): no /home endpoint — compose from /products?sort=… and /shops when switching.
-  return mock(HOME);
+export async function getHome(): Promise<typeof HOME> {
+  if (USE_MOCKS) return mock(HOME);
+  const [reco, news, popular] = await Promise.all([
+    catalogApi.homeProducts("rating"),
+    catalogApi.homeProducts("newest"),
+    catalogApi.homeProducts("popular"),
+  ]);
+  const products = [...new Map([...reco, ...news, ...popular].map((p) => [p.id, p])).values()];
+  return {
+    rails: { reco, news, popular },
+    tabletReco: reco,
+    promos: products.filter((p) => p.compareAtPrice !== null && p.compareAtPrice > p.price),
+    promoEndsIn: "",
+    // These blocks need dedicated API data before they can be displayed live.
+    trust: [], mapPins: [], nearby: [], popularShops: [],
+    sellSteps: ["Nommez votre boutique", "Vérifiez votre identité", "Publiez votre premier produit"],
+  };
 }
 
 export async function getCatalog(filters: CatalogFilters) {

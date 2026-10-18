@@ -1,6 +1,7 @@
 /** catalogue — /categories · /products · /products/{slug} · /products/{id}/reviews · /shops/{slug} · /shops/{slug}/products · /search/suggestions */
 import type { Category, CatalogFilters, CatalogResult, Page, ProductDetail, ProductSummary, Review, SearchResult, ShopDetail } from "@/lib/types";
 import { apiFetch, pageQuery } from "./client";
+import { toHomeProduct, type HomeProductResponse } from "./home-contract";
 
 const SORTS: Record<NonNullable<CatalogFilters["tri"]>, string> = {
   pertinence: "relevance",
@@ -11,6 +12,13 @@ const SORTS: Record<NonNullable<CatalogFilters["tri"]>, string> = {
 };
 
 export const catalogApi = {
+  homeProducts: async (sort: "newest" | "popular" | "rating") => {
+    const page = await apiFetch<Page<HomeProductResponse>>("/products", {
+      token: null,
+      query: { sort, page: 0, size: 10 },
+    });
+    return page.items.map(toHomeProduct);
+  },
   categories: () => apiFetch<Category[]>("/categories", { next: { revalidate: 300 } }),
 
   products: (f: CatalogFilters, size = 12) =>
