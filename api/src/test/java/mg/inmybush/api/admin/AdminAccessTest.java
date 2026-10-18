@@ -9,6 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Optional;
 import java.util.UUID;
 import mg.inmybush.api.admin.controller.AdminController;
+import mg.inmybush.api.admin.dto.CategoryRequest;
+import mg.inmybush.api.admin.service.AdminCategoryService;
 import mg.inmybush.api.admin.service.AdminService;
 import mg.inmybush.api.admin.service.AuditService;
 import mg.inmybush.api.config.SecurityConfig;
@@ -35,6 +37,7 @@ import org.springframework.test.web.servlet.MockMvc;
 class AdminAccessTest {
     @Autowired MockMvc mvc;
     @MockitoBean AdminService admin;
+    @MockitoBean AdminCategoryService categories;
     @MockitoBean SettingsService settings;
     @MockitoBean AuditService audit;
     @MockitoBean UserRepository users;
@@ -85,5 +88,38 @@ class AdminAccessTest {
         mvc.perform(post("/api/v1/admin/reports/" + id + "/resolve").with(as("ADMIN"))
             .contentType("application/json").content("{\"status\":\"DISMISSED\",\"note\":\"Sans objet\"}")).andExpect(status().isOk());
         verify(admin).resolveReport(id, id, mg.inmybush.api.report.entity.ReportStatus.DISMISSED, "Sans objet");
+    }
+    @Test void onlyAdminsManageCategories() throws Exception {
+        mvc.perform(get("/api/v1/admin/categories").with(as("SELLER"))).andExpect(status().isForbidden());
+        mvc.perform(post("/api/v1/admin/categories").with(as("SELLER")).contentType("application/json")
+            .content("{\"name\":\"Thés\"}")).andExpect(status().isForbidden());
+        verifyNoInteractions(categories);
+    }
+    @Test void categoryRoutesReachTheService() throws Exception {
+        mvc.perform(get("/api/v1/admin/categories").with(as("ADMIN"))).andExpect(status().isOk());
+        verify(categories).list();
+        mvc.perform(post("/api/v1/admin/categories").with(as("ADMIN")).contentType("application/json")
+            .content("{\"name\":\"Thés\",\"icon\":\"leaf\"}")).andExpect(status().isCreated());
+        verify(categories).create(new CategoryRequest("Thés", null, "leaf", null));
+        mvc.perform(put("/api/v1/admin/categories/" + id).with(as("ADMIN")).contentType("application/json")
+            .content("{\"name\":\"Thés et tisanes\",\"slug\":\"thes\"}")).andExpect(status().isOk());
+        verify(categories).update(id, new CategoryRequest("Thés et tisanes", "thes", null, null));
+        mvc.perform(post("/api/v1/admin/categories/" + id + "/move?direction=UP").with(as("ADMIN"))).andExpect(status().isNoContent());
+        verify(categories).move(id, AdminCategoryService.Direction.UP);
+        UUID other = UUID.randomUUID();
+        mvc.perform(post("/api/v1/admin/categories/" + id + "/deactivate").with(as("ADMIN")).contentType("application/json")
+            .content("{\"replacementId\":\"" + other + "\"}")).andExpect(status().isOk());
+        verify(categories).deactivate(id, other);
+        mvc.perform(post("/api/v1/admin/categories/" + id + "/deactivate").with(as("ADMIN"))).andExpect(status().isOk());
+        verify(categories).deactivate(id, null);
+        mvc.perform(post("/api/v1/admin/categories/" + id + "/reactivate").with(as("ADMIN"))).andExpect(status().isOk());
+        verify(categories).reactivate(id);
+    }
+    @Test void aCategoryNeedsAName() throws Exception {
+        for (String body : new String[]{"{\"name\":\"  \"}", "{\"name\":\"x\"}", "{}"}) {
+            mvc.perform(post("/api/v1/admin/categories").with(as("ADMIN")).contentType("application/json").content(body))
+                .andExpect(status().isBadRequest());
+        }
+        verifyNoInteractions(categories);
     }
 }

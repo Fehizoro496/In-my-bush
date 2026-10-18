@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 import mg.inmybush.api.catalog.dto.CategoryResponse;
 import mg.inmybush.api.catalog.entity.Category;
+import mg.inmybush.api.common.BadRequestException;
 import mg.inmybush.api.catalog.entity.ProductStatus;
 import mg.inmybush.api.catalog.repository.CategoryRepository;
 import mg.inmybush.api.catalog.repository.ProductRepository;
@@ -39,6 +40,7 @@ public class CategoryService {
             }
         }
         return all.stream()
+            .filter(Category::isActive)
             .map(c -> new CategoryResponse(c.getId(), c.getParent() == null ? null : c.getParent().getId(), c.getName(),
                 c.getSlug(), c.getIcon(), c.getPosition(), total.getOrDefault(c.getId(), 0L)))
             .toList();
@@ -47,6 +49,16 @@ public class CategoryService {
     @Transactional(readOnly = true)
     public Category require(UUID id) {
         return categories.findById(id).orElseThrow(() -> NotFoundException.of("Catégorie", id));
+    }
+
+    /** A category a seller can still put a product in. */
+    @Transactional(readOnly = true)
+    public Category requireActive(UUID id) {
+        Category category = require(id);
+        if (!category.isActive()) {
+            throw new BadRequestException("CATEGORY_INACTIVE", "Cette catégorie n'est plus proposée, choisissez-en une autre.");
+        }
+        return category;
     }
 
     /** The category and all its descendants, for filtering. */

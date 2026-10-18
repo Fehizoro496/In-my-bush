@@ -28,6 +28,10 @@ public class Category extends BaseEntity {
     @Column(name = "position", nullable = false)
     private int position;
 
+    /** false once withdrawn by an administrator: hidden from the catalogue, no new product. */
+    @Column(name = "active", nullable = false)
+    private boolean active = true;
+
     protected Category() {
     }
 
@@ -48,4 +52,18 @@ public class Category extends BaseEntity {
     public String getIcon() { return icon; }
 
     public int getPosition() { return position; }
+
+    public boolean isActive() { return active; }
+
+    public void setParent(Category parent) { this.parent = parent; }
+
+    public void setName(String name) { this.name = name; }
+
+    public void setSlug(String slug) { this.slug = slug; }
+
+    public void setIcon(String icon) { this.icon = icon; }
+
+    public void setPosition(int position) { this.position = position; }
+
+    public void setActive(boolean active) { this.active = active; }
 }

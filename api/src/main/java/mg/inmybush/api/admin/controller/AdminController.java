@@ -3,13 +3,18 @@ package mg.inmybush.api.admin.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import mg.inmybush.api.admin.dto.AdminCategoryResponse;
 import mg.inmybush.api.admin.dto.AdminUserResponse;
 import mg.inmybush.api.admin.dto.AuditEventResponse;
+import mg.inmybush.api.admin.dto.CategoryRequest;
 import mg.inmybush.api.admin.dto.DashboardResponse;
+import mg.inmybush.api.admin.dto.DeactivateCategoryRequest;
 import mg.inmybush.api.admin.dto.ModerationRequest;
 import mg.inmybush.api.admin.dto.ResolveReportRequest;
+import mg.inmybush.api.admin.service.AdminCategoryService;
 import mg.inmybush.api.admin.service.AdminService;
 import mg.inmybush.api.admin.service.AuditService;
 import mg.inmybush.api.auth.security.CurrentUser;
@@ -29,6 +34,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,12 +49,14 @@ public class AdminController {
     private final AdminService adminService;
     private final SettingsService settingsService;
     private final AuditService audit;
+    private final AdminCategoryService categoryService;
 
     public AdminController(AdminService adminService, SettingsService settingsService,
-        AuditService audit) {
+        AuditService audit, AdminCategoryService categoryService) {
         this.adminService = adminService;
         this.settingsService = settingsService;
         this.audit = audit;
+        this.categoryService = categoryService;
     }
 
     @GetMapping("/dashboard")
@@ -122,6 +130,46 @@ public class AdminController {
     @Operation(summary = "Rejeter un produit")
     public void rejectProduct(@PathVariable UUID id, @Valid @RequestBody ModerationRequest request) {
         adminService.rejectProduct(id, request.reason());
+    }
+
+    // ------------------------------------------------------------------ categories
+
+    @GetMapping("/categories")
+    @Operation(summary = "Toutes les catégories, actives ou non, dans l'ordre d'affichage")
+    public List<AdminCategoryResponse> categories() {
+        return categoryService.list();
+    }
+
+    @PostMapping("/categories")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Créer une catégorie (lien déduit du nom s'il est vide)")
+    public AdminCategoryResponse createCategory(@Valid @RequestBody CategoryRequest request) {
+        return categoryService.create(request);
+    }
+
+    @PutMapping("/categories/{id}")
+    @Operation(summary = "Modifier une catégorie")
+    public AdminCategoryResponse updateCategory(@PathVariable UUID id, @Valid @RequestBody CategoryRequest request) {
+        return categoryService.update(id, request);
+    }
+
+    @PostMapping("/categories/{id}/move")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Monter ou descendre une catégorie parmi ses voisines")
+    public void moveCategory(@PathVariable UUID id, @RequestParam AdminCategoryService.Direction direction) {
+        categoryService.move(id, direction);
+    }
+
+    @PostMapping("/categories/{id}/deactivate")
+    @Operation(summary = "Désactiver une catégorie ; ses produits vont dans replacementId (obligatoire s'il y en a)")
+    public AdminCategoryResponse deactivateCategory(@PathVariable UUID id, @RequestBody(required = false) DeactivateCategoryRequest request) {
+        return categoryService.deactivate(id, request == null ? null : request.replacementId());
+    }
+
+    @PostMapping("/categories/{id}/reactivate")
+    @Operation(summary = "Réactiver une catégorie")
+    public AdminCategoryResponse reactivateCategory(@PathVariable UUID id) {
+        return categoryService.reactivate(id);
     }
 
     // ------------------------------------------------------------------ orders

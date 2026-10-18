@@ -59,7 +59,7 @@ public class SellerProductService {
     public SellerProductResponse create(UUID userId, SellerProductRequest req) {
         Shop shop = shopService.requireMyShop(userId);
         validatePrices(req.price(), req.compareAtPrice());
-        Category category = categoryService.require(req.categoryId());
+        Category category = categoryService.requireActive(req.categoryId());
         Product p = new Product(shop, category, req.name().trim(), uniqueSlug(req.name()));
         p.setDescription(req.description());
         p.setPrice(req.price());
@@ -89,7 +89,7 @@ public class SellerProductService {
             contentChanged = true;
         }
         if (req.categoryId() != null && !req.categoryId().equals(p.getCategory().getId())) {
-            p.setCategory(categoryService.require(req.categoryId()));
+            p.setCategory(categoryService.requireActive(req.categoryId()));
             contentChanged = true;
         }
         if (req.imageUrls() != null && !Objects.equals(req.imageUrls(), p.getImageUrls())) {

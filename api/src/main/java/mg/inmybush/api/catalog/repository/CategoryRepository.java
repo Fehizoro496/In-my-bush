@@ -16,6 +16,10 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
     @Query("select c from Category c left join fetch c.parent order by c.position asc, c.name asc")
     List<Category> findAllOrdered();
 
-    @Query("select c from Category c where lower(c.name) like lower(concat('%', :q, '%')) order by c.position")
+    boolean existsBySlug(String slug);
+
+    boolean existsBySlugAndIdNot(String slug, UUID id);
+
+    @Query("select c from Category c where c.active = true and lower(c.name) like lower(concat('%', :q, '%')) order by c.position")
     List<Category> searchByName(@Param("q") String q, Pageable pageable);
 }

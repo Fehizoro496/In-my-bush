@@ -93,9 +93,34 @@ class AdminFoundationIT {
             .andExpect(status().isUnauthorized());
         mvc.perform(get("/api/v1/admin/users?role=BUYER&status=SUSPENDED&q=Acheteur").header("Authorization", "Bearer " + adminToken))
             .andExpect(status().isOk()).andExpect(jsonPath("$.totalItems").value(1));
+        // Other tests share the schema: count only this administrator's events.
+        assertEquals(2, audit.findAll().stream().filter(e -> e.getActorId().equals(admin.getId())).count());
         mvc.perform(get("/api/v1/admin/audit").header("Authorization", "Bearer " + adminToken))
-            .andExpect(status().isOk()).andExpect(jsonPath("$.totalItems").value(2))
-            .andExpect(jsonPath("$.items[0].actorName").value("Admin Test"));
+            .andExpect(status().isOk()).andExpect(jsonPath("$.items[0].actorName").value("Admin Test"));
+    }
+    @Test void deactivatingACategoryMovesItsProductsAndHidesIt() throws Exception {
+        String token = "Bearer " + login(user("Admin", true)).get("accessToken").asText();
+        var created = json.readTree(mvc.perform(post("/api/v1/admin/categories").header("Authorization", token)
+            .contentType("application/json").content("{\"name\":\"Thés " + UUID.randomUUID().toString().substring(0, 8) + "\"}"))
+            .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString());
+        UUID categoryId = UUID.fromString(created.get("id").asText());
+        Category target = categories.findAll().stream().filter(c -> c.getParent() == null && !c.getId().equals(categoryId)).findFirst().orElseThrow();
+        Shop shop = shops.saveAndFlush(new Shop(user("Vendeur", false), "Boutique thé", UUID.randomUUID().toString()));
+        Product product = new Product(shop, categories.findById(categoryId).orElseThrow(), "Thé vert", UUID.randomUUID().toString());
+        product.setUnit(ProductUnit.KG);
+        product.setPrice(1000);
+        product = products.saveAndFlush(product);
+        mvc.perform(post("/api/v1/admin/categories/" + categoryId + "/deactivate").header("Authorization", token))
+            .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("CATEGORY_HAS_PRODUCTS"));
+        mvc.perform(post("/api/v1/admin/categories/" + categoryId + "/deactivate").header("Authorization", token)
+            .contentType("application/json").content("{\"replacementId\":\"" + target.getId() + "\"}"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.active").value(false));
+        assertEquals(target.getId(), products.findById(product.getId()).orElseThrow().getCategory().getId());
+        String publicList = mvc.perform(get("/api/v1/categories")).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertFalse(publicList.contains(categoryId.toString()));
+        mvc.perform(get("/api/v1/admin/categories").header("Authorization", token)).andExpect(status().isOk())
+            .andExpect(jsonPath("$[?(@.id == '" + categoryId + "')].active").value(false));
+        assertTrue(audit.findAll().stream().anyMatch(e -> "CATEGORY_DEACTIVATED".equals(e.getAction()) && categoryId.equals(e.getTargetId())));
     }
     @Test void failedDecisionsDoNotCreateAuditEvents() throws Exception {
         String token = login(user("Admin", true)).get("accessToken").asText();
