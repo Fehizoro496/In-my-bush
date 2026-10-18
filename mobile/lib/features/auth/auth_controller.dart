@@ -10,7 +10,13 @@ class AuthController extends AsyncNotifier<AppUser?> {
   AuthRepository get _repo => ref.read(authRepositoryProvider);
 
   @override
-  Future<AppUser?> build() => ref.watch(authRepositoryProvider).restore();
+  Future<AppUser?> build() {
+    ref.listen(sessionExpiredProvider, (_, __) {
+      state = const AsyncData<AppUser?>(null);
+      _sessionChanged();
+    });
+    return ref.watch(authRepositoryProvider).restore();
+  }
 
   Future<void> login(String phone, String password) async {
     state = const AsyncLoading<AppUser?>();

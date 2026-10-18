@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Compile-time configuration, injected with `--dart-define`.
 ///
 /// ```sh
@@ -13,7 +15,7 @@ abstract class AppConfig {
 
   /// When `true` every repository returns the mockup data locally instead of
   /// calling the API.
-  static const bool useMock = bool.fromEnvironment('USE_MOCK');
+  static const bool useMock = !kReleaseMode && bool.fromEnvironment('USE_MOCK');
 
   static const String appName = 'In my bush';
   static const String version = '1.0';

@@ -90,7 +90,7 @@ class ApiAuthRepository implements AuthRepository {
   @override
   Future<AppUser?> restore() async {
     final token = await _tokens.readAccessToken();
-    if (token == null) return null;
+    if (token == null && await _tokens.readRefreshToken() == null) return null;
     try {
       return await _account.getMe();
     } catch (_) {
