@@ -16,6 +16,9 @@ import org.springframework.data.repository.query.Param;
 public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     @EntityGraph(attributePaths = {"buyer", "shop", "items"})
+    Page<Order> findByStatus(OrderStatus status, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"buyer", "shop", "items"})
     Page<Order> findByBuyerId(UUID buyerId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"buyer", "shop", "items"})

@@ -6,16 +6,25 @@ import jakarta.validation.Valid;
 import java.util.Map;
 import java.util.UUID;
 import mg.inmybush.api.admin.dto.AdminUserResponse;
+import mg.inmybush.api.admin.dto.AuditEventResponse;
 import mg.inmybush.api.admin.dto.DashboardResponse;
 import mg.inmybush.api.admin.dto.ModerationRequest;
 import mg.inmybush.api.admin.dto.ResolveReportRequest;
+import mg.inmybush.api.admin.service.AdminService;
+import mg.inmybush.api.admin.service.AuditService;
 import mg.inmybush.api.auth.security.CurrentUser;
+import mg.inmybush.api.catalog.dto.SellerProductResponse;
+import mg.inmybush.api.catalog.entity.ProductStatus;
 import mg.inmybush.api.common.PageResponse;
 import mg.inmybush.api.order.dto.OrderSummaryResponse;
-import mg.inmybush.api.report.entity.ReportStatus;
+import mg.inmybush.api.order.entity.OrderStatus;
 import mg.inmybush.api.report.dto.ReportResponse;
+import mg.inmybush.api.report.entity.ReportStatus;
 import mg.inmybush.api.settings.service.SettingsService;
+import mg.inmybush.api.user.entity.Role;
+import mg.inmybush.api.user.entity.UserStatus;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,7 +34,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import mg.inmybush.api.admin.service.AdminService;
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -34,10 +42,13 @@ public class AdminController {
 
     private final AdminService adminService;
     private final SettingsService settingsService;
+    private final AuditService audit;
 
-    public AdminController(AdminService adminService, SettingsService settingsService) {
+    public AdminController(AdminService adminService, SettingsService settingsService,
+        AuditService audit) {
         this.adminService = adminService;
         this.settingsService = settingsService;
+        this.audit = audit;
     }
 
     @GetMapping("/dashboard")
@@ -51,20 +62,23 @@ public class AdminController {
     @GetMapping("/users")
     @Operation(summary = "Liste des utilisateurs")
     public PageResponse<AdminUserResponse> users(@RequestParam(defaultValue = "0") int page,
-                                                  @RequestParam(defaultValue = "20") int size) {
-        return adminService.listUsers(page, size);
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false) Role role,
+        @RequestParam(required = false) UserStatus status,
+        @RequestParam(required = false) String q) {
+        return adminService.listUsers(role, status, q, page, size);
     }
 
     @PostMapping("/users/{id}/suspend")
     @Operation(summary = "Suspendre un utilisateur")
-    public AdminUserResponse suspendUser(@PathVariable UUID id) {
-        return adminService.suspendUser(id);
+    public AdminUserResponse suspendUser(@PathVariable UUID id, @Valid @RequestBody ModerationRequest request) {
+        return adminService.suspendUser(id, request.reason());
     }
 
     @PostMapping("/users/{id}/ban")
     @Operation(summary = "Bannir un utilisateur")
-    public AdminUserResponse banUser(@PathVariable UUID id) {
-        return adminService.banUser(id);
+    public AdminUserResponse banUser(@PathVariable UUID id, @Valid @RequestBody ModerationRequest request) {
+        return adminService.banUser(id, request.reason());
     }
 
     @PostMapping("/users/{id}/reactivate")
@@ -74,6 +88,27 @@ public class AdminController {
     }
 
     // ------------------------------------------------------------------ products moderation
+
+    @GetMapping("/products")
+    @Operation(summary = "Liste des produits, à valider ou non")
+    public PageResponse<SellerProductResponse> products(
+        @RequestParam(required = false) ProductStatus status,
+        @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+        return adminService.listProducts(status, page, size);
+    }
+
+    @GetMapping("/products/{id}")
+    @Operation(summary = "Fiche d'un produit")
+    public SellerProductResponse product(@PathVariable UUID id) {
+        return adminService.product(id);
+    }
+
+    @GetMapping("/audit")
+    @Operation(summary = "Journal des actions d'administration")
+    public PageResponse<AuditEventResponse> audit(
+        @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+        return audit.list(page, size);
+    }
 
     @PostMapping("/products/{id}/approve")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -94,8 +129,9 @@ public class AdminController {
     @GetMapping("/orders")
     @Operation(summary = "Toutes les commandes")
     public PageResponse<OrderSummaryResponse> orders(@RequestParam(defaultValue = "0") int page,
-                                                      @RequestParam(defaultValue = "20") int size) {
-        return adminService.listOrders(page, size);
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false) OrderStatus status) {
+        return adminService.listOrders(status, page, size);
     }
 
     // ------------------------------------------------------------------ reports
@@ -123,8 +159,11 @@ public class AdminController {
     }
 
     @PatchMapping("/settings")
+    @Transactional
     @Operation(summary = "Modifier des paramètres")
     public Map<String, String> updateSettings(@RequestBody Map<String, String> changes) {
-        return settingsService.update(changes);
+        var result = settingsService.update(changes);
+        audit.record("SETTINGS_UPDATED", "PLATFORM", null, String.join(", ", changes.keySet()));
+        return result;
     }
 }

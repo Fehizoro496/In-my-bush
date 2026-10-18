@@ -53,6 +53,10 @@ public class RefreshTokenService {
         if (token.isExpired(now)) {
             throw new UnauthorizedException("Session expirée, veuillez vous reconnecter.");
         }
+        if (!token.getUser().isActive()) {
+            tokens.revokeAllForUser(token.getUser().getId(), now);
+            throw new UnauthorizedException("Ce compte ne peut plus ouvrir de session.");
+        }
         token.revoke(now);
         return new Rotation(token.getUser(), issue(token.getUser()));
     }
