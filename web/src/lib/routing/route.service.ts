@@ -81,8 +81,12 @@ export const routeService = {
   toAdminProducts: (options?: NavigateOptions) => navigate(ROUTES.adminProducts, options),
   toAdminCategories: (options?: NavigateOptions) => navigate(ROUTES.adminCategories, options),
   toAdminUsers: (options?: NavigateOptions) => navigate(ROUTES.adminUsers, options),
+  toAdminUser: (id: string, options?: NavigateOptions) => navigate(ROUTES.adminUser(id), options),
+  toAdminShops: (options?: NavigateOptions) => navigate(ROUTES.adminShops, options),
+  toAdminShop: (id: string, options?: NavigateOptions) => navigate(ROUTES.adminShop(id), options),
   toAdminOrders: (options?: NavigateOptions) => navigate(ROUTES.adminOrders, options),
   toAdminReports: (options?: NavigateOptions) => navigate(ROUTES.adminReports, options),
+  toAdminReport: (id: string, options?: NavigateOptions) => navigate(ROUTES.adminReport(id), options),
   toAdminAudit: (options?: NavigateOptions) => navigate(ROUTES.adminAudit, options),
 
   // Linked from the footer, pages not built yet

@@ -1,8 +1,10 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import type { AdminProduct } from "@/lib/api/admin-contract";
 import { PRODUCT_STATUS } from "@/lib/admin/labels";
 import { formatAriary } from "@/lib/format";
+import { ROUTES } from "@/lib/routing/routes";
 import { Modal } from "@/components/ui/Modal";
 import { Table, THead, Td, Th, Tr } from "@/components/ui/Table";
 import { AdminActionForm } from "./AdminActionForm";
@@ -35,6 +37,7 @@ export function AdminProductsTable({ items }: { items: AdminProductRow[] }) {
 function ProductSheet({ product: p, onDone }: { product: AdminProductRow; onDone: () => void }) {
   const photos = p.images.filter(url => /^https?:\/\//.test(url));
   return <div className="flex flex-col gap-4 text-[14px]">
+    <p className="m-0">Boutique : <Link href={ROUTES.adminShop(p.shop.id)} className="font-bold">{p.shop.name}</Link></p>
     <dl className="grid grid-cols-3 gap-3">
       <div><dt className="text-muted">Prix</dt><dd className="font-bold">{formatAriary(p.price)} / {p.unitLabel}</dd></div>
       <div><dt className="text-muted">Stock</dt><dd className="font-bold">{p.stock}</dd></div>
@@ -46,7 +49,11 @@ function ProductSheet({ product: p, onDone }: { product: AdminProductRow; onDone
         <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-line px-3 py-1.5 font-semibold">Photo {i + 1}</a>)}</div>
         : <p className="text-muted">Aucune photo.</p>}
     </section>
-    {p.rejectionReason && <p className="rounded-lg bg-danger-bg p-3 text-danger-ink">Motif du refus : {p.rejectionReason}</p>}
+    {p.rejectionReason && <p className="rounded-lg bg-danger-bg p-3 text-danger-ink">Motif du refus ou du retrait : {p.rejectionReason}</p>}
     {p.status === "PENDING_REVIEW" && <AdminActionForm id={p.id} reason onDone={onDone} actions={[{ value: "approve", label: "Approuver" }, { value: "reject", label: "Refuser" }]} />}
+    {p.status === "PUBLISHED" && <>
+      <p className="m-0 text-muted">Retiré de la vente, le produit disparaît du catalogue ; le vendeur voit le motif et peut corriger sa fiche.</p>
+      <AdminActionForm id={p.id} reason onDone={onDone} actions={[{ value: "withdraw", label: "Retirer de la vente" }]} />
+    </>}
   </div>;
 }
