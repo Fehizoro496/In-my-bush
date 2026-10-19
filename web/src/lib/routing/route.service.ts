@@ -23,6 +23,7 @@ export interface NavigateOptions {
 export interface AppRouter {
   push(href: string, options?: { scroll?: boolean }): void;
   replace(href: string, options?: { scroll?: boolean }): void;
+  refresh(): void;
 }
 
 let router: AppRouter | null = null;
@@ -78,9 +79,11 @@ export const routeService = {
   // Backoffice (role ADMIN)
   toAdmin: (options?: NavigateOptions) => navigate(ROUTES.admin, options),
   toAdminProducts: (options?: NavigateOptions) => navigate(ROUTES.adminProducts, options),
+  toAdminCategories: (options?: NavigateOptions) => navigate(ROUTES.adminCategories, options),
   toAdminUsers: (options?: NavigateOptions) => navigate(ROUTES.adminUsers, options),
   toAdminOrders: (options?: NavigateOptions) => navigate(ROUTES.adminOrders, options),
   toAdminReports: (options?: NavigateOptions) => navigate(ROUTES.adminReports, options),
+  toAdminAudit: (options?: NavigateOptions) => navigate(ROUTES.adminAudit, options),
 
   // Linked from the footer, pages not built yet
   toHelpDelivery: (options?: NavigateOptions) => navigate(ROUTES.helpDelivery, options),
@@ -94,6 +97,12 @@ export const routeService = {
 
   /** Goes to an internal path that is not a plain entry of ROUTES (query string, `next` parameter…). */
   navigate,
+
+  /** Renders the current page again on the server, keeping client state and scroll. */
+  refresh(): void {
+    if (!router) throw new Error("routeService: refresh is only available in client components.");
+    router.refresh();
+  },
 
   /** Gives the service the Next.js router. Called by <RouteServiceBinder />. */
   bind(next: AppRouter | null): void {

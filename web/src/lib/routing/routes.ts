@@ -49,9 +49,11 @@ export const ROUTES = {
   // Backoffice (role ADMIN)
   admin: "/admin",
   adminProducts: "/admin/produits",
+  adminCategories: "/admin/categories",
   adminUsers: "/admin/utilisateurs",
   adminOrders: "/admin/commandes",
   adminReports: "/admin/signalements",
+  adminAudit: "/admin/journal",
 
   // Linked from the footer, pages not built yet (see PLANNED_ROUTES)
   helpDelivery: "/aide/livraison",

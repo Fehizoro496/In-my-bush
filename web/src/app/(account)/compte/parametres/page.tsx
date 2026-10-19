@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Input, Select } from "@/components/ui/Form";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Switch } from "@/components/ui/Switch";
-import { getCurrentUser } from "@/lib/data/account";
+import { requireUser } from "@/lib/auth/require-user";
 import { initials } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Profil & paramètres" };
@@ -25,7 +25,7 @@ function Row({ icon, children, first }: { icon: IconName; children: React.ReactN
 }
 
 export default async function SettingsPage() {
-  const user = await getCurrentUser();
+  const user = await requireUser();
   const name = `${user.firstName} ${user.lastName}`;
   return (
     <>

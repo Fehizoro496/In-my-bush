@@ -53,7 +53,7 @@ export default async function HomePage() {
                 <Icon name="basket" size={88} />
               </span>
               <span className="self-start rounded-[6px] bg-orange-500 px-2 py-1 text-[12px] font-extrabold text-on-secondary">
-                −20 % jusqu’à dimanche
+                Fruits et légumes
               </span>
               <span className="relative flex flex-col gap-1.5">
                 <b className="font-display text-[22px] leading-[1.1] lg:text-[26px]">Paniers de saison des Hautes Terres</b>
@@ -69,7 +69,7 @@ export default async function HomePage() {
               <span className="absolute right-5 bottom-4 flex text-pomme-600 opacity-50" aria-hidden>
                 <Icon name="sprout" size={88} />
               </span>
-              <span className="self-start rounded-[6px] bg-ink px-2 py-1 text-[12px] font-extrabold text-white">Nouveau</span>
+              <span className="self-start rounded-[6px] bg-ink px-2 py-1 text-[12px] font-extrabold text-white">Cosmétiques</span>
               <span className="relative flex flex-col gap-1.5">
                 <b className="font-display text-[22px] leading-[1.1] lg:text-[26px]">Cosmétiques bio faits main</b>
                 <span className="flex items-center gap-1.5 text-[15px] font-bold text-pomme-700">
@@ -81,7 +81,7 @@ export default async function HomePage() {
         </section>
 
         {/* Trust */}
-        <section aria-label="Nos engagements" className="grid gap-3 md:grid-cols-3 md:gap-4 lg:gap-6">
+        {home.trust.length > 0 && <section aria-label="Nos engagements" className="grid gap-3 md:grid-cols-3 md:gap-4 lg:gap-6">
           {home.trust.map((t) => (
             <div key={t.title} className="flex items-center gap-3.5 rounded-lg border border-line bg-white px-5 py-[18px]">
               <span className="flex size-11 shrink-0 items-center justify-center rounded-md bg-pomme-100 text-pomme-700">
@@ -93,7 +93,7 @@ export default async function HomePage() {
               </span>
             </div>
           ))}
-        </section>
+        </section>}
       </Container>
 
       <Container className="flex flex-col gap-12 md:gap-14 lg:gap-16">
@@ -130,26 +130,26 @@ export default async function HomePage() {
         <ProductRails rails={home.rails} />
 
         {/* Promotions */}
-        <section className="flex flex-col gap-6 rounded-[24px] bg-orange-50 p-5 md:p-7 lg:rounded-[28px] lg:p-9">
+        {home.promos.length > 0 && <section className="flex flex-col gap-6 rounded-[24px] bg-orange-50 p-5 md:p-7 lg:rounded-[28px] lg:p-9">
           <SectionHeader
             title="Promotions"
             aside={
-              <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-[14px] font-bold text-orange-800">
+              home.promoEndsIn && <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-[14px] font-bold text-orange-800">
                 <Icon name="clock" size={16} />
                 {home.promoEndsIn}
               </span>
             }
             action={
               <Link href={ROUTES.catalogue} className="text-[15px] font-bold text-orange-700 no-underline hover:text-orange-800">
-                Toutes les promos
+                Explorer le catalogue
               </Link>
             }
           />
           <ProductGrid products={home.promos} />
-        </section>
+        </section>}
 
         {/* Near you */}
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        {home.nearby.length > 0 && <section className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <div className="relative min-h-[320px] overflow-hidden rounded-[24px] bg-[#EEF3E4] lg:min-h-[440px]" aria-label="Carte des producteurs proches">
             <span className="absolute top-[34%] -left-10 h-[22px] w-[140%] -rotate-[9deg] bg-white" />
             <span className="absolute -top-10 left-[43%] h-[140%] w-[18px] rotate-[16deg] bg-white" />
@@ -203,10 +203,10 @@ export default async function HomePage() {
               </Link>
             ))}
           </div>
-        </section>
+        </section>}
 
         {/* Popular producers */}
-        <section className="flex flex-col gap-5">
+        {home.popularShops.length > 0 && <section className="flex flex-col gap-5">
           <SectionHeader
             title="Producteurs populaires"
             action={
@@ -220,7 +220,7 @@ export default async function HomePage() {
               <SellerCard key={s.slug} shop={s} />
             ))}
           </div>
-        </section>
+        </section>}
 
         {/* Sell CTA */}
         <section className="grid items-center gap-8 rounded-[24px] border border-line bg-white p-6 md:p-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-10 lg:rounded-[28px] lg:px-12">

@@ -58,27 +58,27 @@ Ces décisions conditionnent les règles et le suivi admin du lot 3 ; elles ne s
 
 **Accès et sessions**
 
-- [ ] Brancher la connexion web : appel à l’API, cookie de session, déconnexion.
-- [ ] Implémenter le renouvellement côté web et mobile selon les règles ci-dessus : contrôle à l’ouverture, tentative unique après un 401, coordination des requêtes simultanées et retour à la connexion en cas d’échec. Exclure les appels de connexion et de renouvellement de cette relance automatique.
-- [ ] Vérifier le statut du compte à chaque requête authentifiée, pour qu’une suspension ou un bannissement prenne effet immédiatement.
-- [ ] Désactiver par défaut les données simulées et le contournement d’authentification ; les rendre impossibles en production.
-- [ ] Révoquer les jetons de rafraîchissement d’un compte suspendu ou banni, pour fermer ses sessions ouvertes.
-- [ ] Limiter le nombre de tentatives de connexion et de demandes de code SMS.
+- [x] Brancher la connexion web : appel à l’API, cookie de session, déconnexion.
+- [x] Implémenter le renouvellement côté web et mobile selon les règles ci-dessus : contrôle à l’ouverture, tentative unique après un 401, coordination des requêtes simultanées et retour à la connexion en cas d’échec. Exclure les appels de connexion et de renouvellement de cette relance automatique.
+- [x] Vérifier le statut du compte à chaque requête authentifiée, pour qu’une suspension ou un bannissement prenne effet immédiatement.
+- [x] Désactiver par défaut les données simulées et le contournement d’authentification ; les rendre impossibles en production.
+- [x] Révoquer les jetons de rafraîchissement d’un compte suspendu ou banni, pour fermer ses sessions ouvertes.
+- [x] Limiter le nombre de tentatives de connexion et de demandes de code SMS.
 
 **Contrats entre le web et l’API**
 
-- [ ] Ajouter la liste des produits admin (`GET /admin/products`), absente de l’API.
-- [ ] Unifier la route de traitement des signalements (le web appelle `PATCH /admin/reports/{id}`, l’API expose `POST /admin/reports/{id}/resolve`).
-- [ ] Raccorder le dashboard aux seuls compteurs réels utiles au MVP et adapter le contrat web à l’API. Masquer les graphiques et filtres non pris en charge ; reporter les séries, périodes et files d’attente au pilotage P1 du lot 3.
-- [ ] Prendre en charge les filtres envoyés par le web : rôle, statut et recherche pour les utilisateurs ; statut pour les commandes.
-- [ ] Recevoir et enregistrer le motif d’une suspension ou d’un bannissement ; rendre obligatoire le motif de rejet d’un produit.
-- [ ] Remplacer l’identité admin et les compteurs statiques du menu par les données réelles.
+- [x] Ajouter la liste des produits admin (`GET /admin/products`), absente de l’API.
+- [x] Unifier la route de traitement des signalements (le web appelle `PATCH /admin/reports/{id}`, l’API expose `POST /admin/reports/{id}/resolve`).
+- [x] Raccorder le dashboard aux seuls compteurs réels utiles au MVP et adapter le contrat web à l’API. Masquer les graphiques et filtres non pris en charge ; reporter les séries, périodes et files d’attente au pilotage P1 du lot 3.
+- [x] Prendre en charge les filtres envoyés par le web : rôle, statut et recherche pour les utilisateurs ; statut pour les commandes.
+- [x] Recevoir et enregistrer le motif d’une suspension ou d’un bannissement ; rendre obligatoire le motif de rejet d’un produit.
+- [x] Remplacer l’identité admin et les compteurs statiques du menu par les données réelles.
 
 **Traçabilité et qualité**
 
-- [ ] Ajouter un journal d’audit : administrateur, action, cible, date et motif.
-- [ ] Mettre en place une intégration continue minimale : compilation, analyse statique et tests des trois projets.
-- [ ] Écrire les premiers tests d’accès et d’intégration de l’API.
+- [x] Ajouter un journal d’audit : administrateur, action, cible, date et motif.
+- [x] Mettre en place une intégration continue minimale : compilation, analyse statique et tests des trois projets. Le workflow est écrit ; sa première exécution sur GitHub reste à constater.
+- [x] Écrire les premiers tests d’accès et d’intégration de l’API.
 
 **Démarches externes**
 
@@ -101,7 +101,7 @@ Ces décisions conditionnent les règles et le suivi admin du lot 3 ; elles ne s
 - [ ] Finaliser la gestion des utilisateurs.
 - [ ] Créer l’espace de gestion des boutiques.
 - [ ] Finaliser le traitement des signalements.
-- [ ] Implémenter la gestion des catégories.
+- [x] Implémenter la gestion des catégories.
 - [ ] Déclencher les notifications liées aux décisions de modération.
 - [ ] Prévoir des protections contre l’auto-suspension accidentelle et la suppression du dernier accès administrateur.
 - [ ] Valider le parcours **soumission → modération → achat** avec l’application mobile côté vendeur et acheteur, et le backoffice web côté admin. La livraison, la réception et les cas d’annulation seront validés au lot 3.

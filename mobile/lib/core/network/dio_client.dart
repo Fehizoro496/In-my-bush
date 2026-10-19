@@ -22,12 +22,13 @@ final dioProvider = Provider<Dio>((ref) {
     ),
   );
   dio.interceptors
-      .add(AuthInterceptor(dio: dio, storage: ref.watch(tokenStorageProvider)));
+      .add(AuthInterceptor(dio: dio, storage: ref.watch(tokenStorageProvider),
+        onSessionExpired: () => ref.read(sessionExpiredProvider.notifier).state++));
   if (kDebugMode) {
     dio.interceptors.add(PrettyDioLogger(
-      requestHeader: true,
-      requestBody: true,
-      responseBody: true,
+      requestHeader: false,
+      requestBody: false,
+      responseBody: false,
       responseHeader: false,
       compact: true,
       maxWidth: 100,
@@ -95,6 +96,7 @@ final apiClientProvider =
 
 /// Bumped on every login / logout so that user-scoped data is reloaded.
 final sessionEpochProvider = StateProvider<int>((ref) => 0);
+final sessionExpiredProvider = StateProvider<int>((ref) => 0);
 
 /// [ApiClient] for user-scoped repositories (cart, orders, messages…): it is
 /// rebuilt when the session changes, which refreshes everything built on it.

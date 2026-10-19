@@ -34,7 +34,7 @@ Montants en **Ariary, entiers** (`BIGINT`, pas de centimes). Identifiants `UUID`
 | `user_roles` | user_id, role |
 | `addresses` | id, user_id, label, recipient, phone, line1, district, city, landmark, is_default |
 | `shops` | id, owner_id (1-1 user), name, slug (unique), description, region, city, logo_url, cover_url, status (`ACTIVE`, `PAUSED`, `SUSPENDED`), rating_avg, rating_count, created_at |
-| `categories` | id, parent_id, name, slug, icon, position |
+| `categories` | id, parent_id, name, slug, icon, position, active (une catégorie désactivée disparaît du catalogue ; ses produits sont déplacés avant) |
 | `products` | id, shop_id, category_id, name, slug, description, price, compare_at_price, unit (`KG`, `G`, `L`, `PIECE`, `BUNCH`, `JAR`, `PACK`), unit_label, stock, low_stock_threshold, origin_region, status (`DRAFT`, `PENDING_REVIEW`, `PUBLISHED`, `REJECTED`, `ARCHIVED`), rejection_reason, rating_avg, rating_count, created_at, updated_at |
 | `product_images` | id, product_id, url, position |
 | `favorites` | user_id, product_id (PK composite), created_at |
@@ -52,6 +52,8 @@ Montants en **Ariary, entiers** (`BIGINT`, pas de centimes). Identifiants `UUID`
 | `notifications` | id, user_id, context (`PURCHASE`, `SALE`, `SYSTEM`), type, title, body, link, read_at, created_at |
 | `reports` | id, reporter_id, target_type (`PRODUCT`, `SHOP`, `USER`, `REVIEW`, `MESSAGE`), target_id, reason, details, status (`OPEN`, `IN_REVIEW`, `RESOLVED`, `DISMISSED`), resolved_by, created_at |
 | `platform_settings` | key, value (ex. `commission_rate`) |
+| `admin_audit_events` | id, actor_id, action, target_type, target_id, reason, created_at — une ligne par action d'administration |
+| `auth_rate_limits` | key_hash, attempts, expires_at — compteurs de tentatives de connexion et de demandes de code SMS |
 
 ### Cycle de vie d'une commande
 
@@ -99,9 +101,11 @@ avec sorties possibles `REFUSED` (par le vendeur, avant acceptation) et `CANCELL
 | | `/vendre/boutique` | W-Shop-Profile |
 | Backoffice (rôle ADMIN) | `/admin` | A-Dashboard |
 | | `/admin/produits` | A-Products |
+| | `/admin/categories` | — (catégories : création, ordre, désactivation) |
 | | `/admin/utilisateurs` | A-Users |
 | | `/admin/commandes` | A-Orders |
 | | `/admin/signalements` | A-Reports |
+| | `/admin/journal` | — (journal des actions d'administration) |
 | | 404 | W-404 |
 
 ### Mobile (Flutter, go_router)
@@ -141,7 +145,7 @@ Barre du bas (StatefulShellRoute, 5 onglets) : **Accueil** `/` · **Messages** `
 
 ## 5. API REST (`/api/v1`)
 
-Auth par **JWT** (access token court + refresh token). Réponses JSON, erreurs au format RFC 7807 (`application/problem+json`). Pagination `?page=0&size=20` → `{ items, page, size, totalItems, totalPages }`. Documentation OpenAPI sur `/swagger-ui.html`.
+Auth par **JWT** (access token de 15 min + refresh token de 30 jours, renouvelé à chaque usage). Le statut du compte est revérifié à chaque requête : un compte suspendu ou banni est refusé immédiatement et ses refresh tokens sont révoqués. Les connexions et demandes de code SMS sont limitées en nombre (réponse 429). Réponses JSON, erreurs au format RFC 7807 (`application/problem+json`). Pagination `?page=0&size=20` → `{ items, page, size, totalItems, totalPages }`. Documentation OpenAPI sur `/swagger-ui.html`.
 
 | Module | Endpoints |
 |---|---|
@@ -156,7 +160,7 @@ Auth par **JWT** (access token court + refresh token). Réponses JSON, erreurs a
 | notifications | `GET /notifications?context=` · `POST /notifications/{id}/read` · `POST /notifications/read-all` · `GET /notifications/unread-count` |
 | signalements | `POST /reports` |
 | uploads | `POST /uploads/images` (multipart) → `{ url }` |
-| admin | `GET /admin/dashboard` · `GET /admin/products?status=` · `POST /admin/products/{id}/{approve\|reject}` · `GET /admin/users` · `POST /admin/users/{id}/{suspend\|ban\|reactivate}` · `GET /admin/orders` · `GET /admin/transactions` · `GET /admin/reports` · `PATCH /admin/reports/{id}` · `GET/PATCH /admin/settings` |
+| admin | `GET /admin/dashboard` · `GET /admin/products?status=` · `GET /admin/products/{id}` · `POST /admin/products/{id}/{approve\|reject}` (motif obligatoire pour un rejet) · `GET /admin/users?role=&status=&q=` · `POST /admin/users/{id}/{suspend\|ban\|reactivate}` (motif obligatoire, sauf réactivation) · `GET /admin/orders?status=` · `GET /admin/reports?status=` · `POST /admin/reports/{id}/resolve` · `GET/POST /admin/categories` · `PUT /admin/categories/{id}` · `POST /admin/categories/{id}/move?direction=UP\|DOWN` · `POST /admin/categories/{id}/deactivate` (`replacementId` obligatoire si elle a des produits) · `POST /admin/categories/{id}/reactivate` · `GET /admin/audit` · `GET/PATCH /admin/settings` · `GET /admin/transactions` (prévu au lot 6) |
 
 ## 6. Design system
 

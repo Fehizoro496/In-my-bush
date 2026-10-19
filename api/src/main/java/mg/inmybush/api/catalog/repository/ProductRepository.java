@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import mg.inmybush.api.catalog.entity.Category;
 import mg.inmybush.api.catalog.entity.Product;
 import mg.inmybush.api.catalog.entity.ProductStatus;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -54,6 +56,14 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
     @Query("select p.category.id as categoryId, count(p) as cnt from Product p "
         + "where p.status = :status and p.shop.status = mg.inmybush.api.shop.entity.ShopStatus.ACTIVE group by p.category.id")
     List<CategoryCount> countByCategory(@Param("status") ProductStatus status);
+
+    /** Products of every status per category, for the administration of categories. */
+    @Query("select p.category.id as categoryId, count(p) as cnt from Product p group by p.category.id")
+    List<CategoryCount> countAllByCategory();
+
+    @Modifying
+    @Query("update Product p set p.category = :to where p.category.id = :from")
+    int moveToCategory(@Param("from") UUID from, @Param("to") Category to);
 
     /** Locks the rows in id order (deadlock-free) while checking out. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)

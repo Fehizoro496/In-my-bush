@@ -21,16 +21,30 @@ import {
   REVIEWS_TO_LEAVE,
   REVIEW_TAGS,
 } from "@/lib/mock/account";
+import { currentUser } from "@/lib/auth/require-user";
 import { USE_MOCKS, mock } from "./config";
 
+/** The signed-in user, or null for a visitor. */
 export async function getCurrentUser() {
-  return USE_MOCKS ? mock(CURRENT_USER) : meApi.get();
+  return USE_MOCKS ? mock(CURRENT_USER) : currentUser();
 }
+
+const NO_COUNTERS: typeof COUNTERS = {
+  cart: 0,
+  ordersInProgress: 0,
+  unreadMessages: 0,
+  reviewsToLeave: 0,
+  lowStock: 0,
+  ordersToHandle: 0,
+  unreadNotifications: 0,
+};
 
 export async function getCounters() {
   if (USE_MOCKS) return mock(COUNTERS);
+  // TODO(api): only the notification count has an endpoint; the other badges stay at 0 until lot 4.
+  if (!(await currentUser())) return NO_COUNTERS;
   const { count } = await notificationsApi.unreadCount();
-  return { ...COUNTERS, unreadNotifications: count };
+  return { ...NO_COUNTERS, unreadNotifications: count };
 }
 
 export async function getMyOrders() {

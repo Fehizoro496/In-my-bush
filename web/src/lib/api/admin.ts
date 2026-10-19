@@ -34,7 +34,7 @@ export const adminApi = {
   reports: (params: { type?: string; status?: ReportStatus } = {}) =>
     apiFetch<Page<AdminReport>>("/admin/reports", { query: params }),
   updateReport: (id: string, patch: { status: ReportStatus; note?: string }) =>
-    apiFetch<AdminReport>(`/admin/reports/${id}`, { method: "PATCH", body: patch }),
+    apiFetch<AdminReport>(`/admin/reports/${id}/resolve`, { method: "POST", body: patch }),
 
   settings: () => apiFetch<Record<string, string>>("/admin/settings"),
   updateSettings: (patch: Record<string, string>) => apiFetch<Record<string, string>>("/admin/settings", { method: "PATCH", body: patch }),

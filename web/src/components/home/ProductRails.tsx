@@ -19,7 +19,7 @@ export function ProductRails({ rails }: { rails: { reco: ProductSummary[]; news:
           value={tab}
           onChange={setTab}
           items={[
-            { value: "reco", label: "Recommandé pour vous" },
+            { value: "reco", label: "À découvrir" },
             { value: "news", label: "Nouveautés" },
             { value: "popular", label: "Populaires" },
           ]}
@@ -29,7 +29,9 @@ export function ProductRails({ rails }: { rails: { reco: ProductSummary[]; news:
         </Link>
       </div>
       <div role="tabpanel">
-        <ProductGrid products={rails[tab]} />
+        {rails[tab].length ? <ProductGrid products={rails[tab]} /> : (
+          <p className="text-muted">Aucun produit disponible pour le moment.</p>
+        )}
       </div>
     </section>
   );
