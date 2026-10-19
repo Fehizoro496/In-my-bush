@@ -51,6 +51,7 @@ Montants en **Ariary, entiers** (`BIGINT`, pas de centimes). Identifiants `UUID`
 | `messages` | id, conversation_id, sender_id, body, read_at, created_at |
 | `notifications` | id, user_id, context (`PURCHASE`, `SALE`, `SYSTEM`), type, title, body, link, read_at, created_at |
 | `reports` | id, reporter_id, target_type (`PRODUCT`, `SHOP`, `USER`, `REVIEW`, `MESSAGE`), target_id, reason, details, status (`OPEN`, `IN_REVIEW`, `RESOLVED`, `DISMISSED`), resolved_by, created_at |
+| `report_notes` | id, report_id, author_id, body, created_at — notes internes de modération, jamais montrées au signaleur |
 | `platform_settings` | key, value (ex. `commission_rate`) |
 | `admin_audit_events` | id, actor_id, action, target_type, target_id, reason, created_at — une ligne par action d'administration |
 | `auth_rate_limits` | key_hash, attempts, expires_at — compteurs de tentatives de connexion et de demandes de code SMS |
@@ -100,11 +101,15 @@ avec sorties possibles `REFUSED` (par le vendeur, avant acceptation) et `CANCELL
 | | `/vendre/avis` | W-Reviews-Received |
 | | `/vendre/boutique` | W-Shop-Profile |
 | Backoffice (rôle ADMIN) | `/admin` | A-Dashboard |
-| | `/admin/produits` | A-Products |
+| | `/admin/produits` | A-Products (filtres `status`, `q`, `categoryId`, `shopId`) |
 | | `/admin/categories` | — (catégories : création, ordre, désactivation) |
 | | `/admin/utilisateurs` | A-Users |
+| | `/admin/utilisateurs/[id]` | — (fiche compte : boutique, décisions, historique) |
+| | `/admin/boutiques` | — (boutiques : recherche, statut) |
+| | `/admin/boutiques/[id]` | — (fiche boutique : produits par statut, suspension, historique) |
 | | `/admin/commandes` | A-Orders |
 | | `/admin/signalements` | A-Reports |
+| | `/admin/signalements/[id]` | — (fiche signalement : contenu signalé, notes internes, décision) |
 | | `/admin/journal` | — (journal des actions d'administration) |
 | | 404 | W-404 |
 
@@ -160,7 +165,7 @@ Auth par **JWT** (access token de 15 min + refresh token de 30 jours, renouvelé
 | notifications | `GET /notifications?context=` · `POST /notifications/{id}/read` · `POST /notifications/read-all` · `GET /notifications/unread-count` |
 | signalements | `POST /reports` |
 | uploads | `POST /uploads/images` (multipart) → `{ url }` |
-| admin | `GET /admin/dashboard` · `GET /admin/products?status=` · `GET /admin/products/{id}` · `POST /admin/products/{id}/{approve\|reject}` (motif obligatoire pour un rejet) · `GET /admin/users?role=&status=&q=` · `POST /admin/users/{id}/{suspend\|ban\|reactivate}` (motif obligatoire, sauf réactivation) · `GET /admin/orders?status=` · `GET /admin/reports?status=` · `POST /admin/reports/{id}/resolve` · `GET/POST /admin/categories` · `PUT /admin/categories/{id}` · `POST /admin/categories/{id}/move?direction=UP\|DOWN` · `POST /admin/categories/{id}/deactivate` (`replacementId` obligatoire si elle a des produits) · `POST /admin/categories/{id}/reactivate` · `GET /admin/audit` · `GET/PATCH /admin/settings` · `GET /admin/transactions` (prévu au lot 6) |
+| admin | `GET /admin/dashboard` · `GET /admin/products?status=&q=&categoryId=&shopId=` · `GET /admin/products/{id}` · `POST /admin/products/{id}/{approve\|reject\|withdraw}` (motif obligatoire pour un rejet ou un retrait de la vente) · `GET /admin/users?role=&status=&q=` · `GET /admin/users/{id}` · `POST /admin/users/{id}/{suspend\|ban\|reactivate}` (motif obligatoire, sauf réactivation ; ni son propre compte, ni le dernier administrateur actif ; la personne est prévenue par SMS) · `GET /admin/shops?status=&q=` · `GET /admin/shops/{id}` · `POST /admin/shops/{id}/{suspend\|reactivate}` (motif obligatoire pour suspendre) · `GET /admin/orders?status=` · `GET /admin/reports?status=&type=` · `GET /admin/reports/{id}` · `POST /admin/reports/{id}/resolve` (`IN_REVIEW`, puis `RESOLVED` ou `DISMISSED` avec motif obligatoire) · `POST /admin/reports/{id}/notes` · `GET/POST /admin/categories` · `PUT /admin/categories/{id}` · `POST /admin/categories/{id}/move?direction=UP\|DOWN` · `POST /admin/categories/{id}/deactivate` (`replacementId` obligatoire si elle a des produits) · `POST /admin/categories/{id}/reactivate` · `GET /admin/audit` · `GET/PATCH /admin/settings` · `GET /admin/transactions` (prévu au lot 6) |
 
 ## 6. Design system
 

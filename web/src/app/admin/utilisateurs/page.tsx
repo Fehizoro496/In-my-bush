@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { adminLive } from "@/lib/api/admin-live";
 import { requireAdmin } from "@/lib/auth/require-user";
 import { AdminActionForm } from "@/components/admin/AdminActionForm";
@@ -20,7 +21,7 @@ export default async function Users({searchParams}: {searchParams: Promise<Searc
       <button className="rounded-lg bg-ink px-4 py-2 text-white">Rechercher</button>
     </form>
     <AdminTableCard table="users" rows={rows} empty={!data.items.length && "Aucun utilisateur pour ces critères."}><Table fill minWidth={850}><THead><Th>Nom</Th><Th>E-mail</Th><Th className="hidden xl:table-cell">Téléphone</Th><Th>Rôles</Th><Th>Statut</Th><Th className="hidden xl:table-cell">Inscription</Th><Th>Action</Th></THead><tbody>
-      {data.items.map(u => <Tr key={u.id}><Td className="font-bold whitespace-nowrap">{u.firstName} {u.lastName}</Td><Td className="max-w-0 w-1/5 truncate" title={u.email ?? undefined}>{u.email ?? "—"}</Td><Td className="hidden whitespace-nowrap xl:table-cell">{u.phone}</Td>
+      {data.items.map(u => <Tr key={u.id}><Td className="font-bold whitespace-nowrap"><Link href={ROUTES.adminUser(u.id)}>{u.firstName} {u.lastName}</Link></Td><Td className="max-w-0 w-1/5 truncate" title={u.email ?? undefined}>{u.email ?? "—"}</Td><Td className="hidden whitespace-nowrap xl:table-cell">{u.phone}</Td>
         <Td><span className="flex gap-1">{u.roles.map(r => <AdminTag key={r} tags={ROLE} value={r} />)}</span></Td><Td><AdminTag tags={USER_STATUS} value={u.status} /></Td><Td className="hidden xl:table-cell">{dateLabel(u.createdAt)}</Td>
         <Td>{u.id === current.id ? "Votre compte" : <AdminActionForm compact id={u.id} reason actions={u.status === "ACTIVE" ? [{value:"suspend",label:"Suspendre"},{value:"ban",label:"Bannir"}] : [{value:"reactivate",label:"Réactiver"}]} />}</Td></Tr>)}
     </tbody></Table></AdminTableCard>

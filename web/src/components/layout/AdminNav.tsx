@@ -7,7 +7,7 @@ import { cn } from "@/lib/cn";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Drawer } from "@/components/ui/Modal";
 import { Logo } from "./Logo";
-import { ROUTES, withQuery } from "@/lib/routing/routes";
+import { ROUTES } from "@/lib/routing/routes";
 import type { User } from "@/lib/types";
 import type { AdminCounts } from "@/lib/api/admin-contract";
 import { logoutAction } from "@/lib/auth/actions";
@@ -31,7 +31,7 @@ const groups = (counts: AdminCounts): { title: string; items: AdminItem[] }[] =>
     title: "Marketplace",
     items: [
       { label: "Utilisateurs", href: ROUTES.adminUsers, icon: "users", primary: true },
-      { label: "Vendeurs", href: withQuery(ROUTES.adminUsers, { role: "SELLER" }), icon: "store" },
+      { label: "Boutiques", href: ROUTES.adminShops, icon: "store", primary: true },
       { label: "Produits", href: ROUTES.adminProducts, icon: "package", badge: String(counts.pendingProducts), primary: true },
       { label: "Catégories", href: ROUTES.adminCategories, icon: "layers", primary: true },
       { label: "Commandes", href: ROUTES.adminOrders, icon: "receipt", primary: true },

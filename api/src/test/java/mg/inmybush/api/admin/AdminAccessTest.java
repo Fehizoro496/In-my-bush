@@ -11,7 +11,9 @@ import java.util.UUID;
 import mg.inmybush.api.admin.controller.AdminController;
 import mg.inmybush.api.admin.dto.CategoryRequest;
 import mg.inmybush.api.admin.service.AdminCategoryService;
+import mg.inmybush.api.admin.service.AdminReportService;
 import mg.inmybush.api.admin.service.AdminService;
+import mg.inmybush.api.admin.service.AdminShopService;
 import mg.inmybush.api.admin.service.AuditService;
 import mg.inmybush.api.config.SecurityConfig;
 import mg.inmybush.api.config.AppProperties;
@@ -38,6 +40,8 @@ class AdminAccessTest {
     @Autowired MockMvc mvc;
     @MockitoBean AdminService admin;
     @MockitoBean AdminCategoryService categories;
+    @MockitoBean AdminShopService shops;
+    @MockitoBean AdminReportService reports;
     @MockitoBean SettingsService settings;
     @MockitoBean AuditService audit;
     @MockitoBean UserRepository users;
@@ -68,18 +72,22 @@ class AdminAccessTest {
     }
     @Test void adminCanReadProductsAndFiltersReachService() throws Exception {
         mvc.perform(get("/api/v1/admin/products?status=PENDING_REVIEW&page=2&size=25").with(as("ADMIN"))).andExpect(status().isOk());
-        verify(admin).listProducts(ProductStatus.PENDING_REVIEW, 2, 25);
+        verify(admin).listProducts(ProductStatus.PENDING_REVIEW, null, null, null, 2, 25);
+        UUID category = UUID.randomUUID();
+        mvc.perform(get("/api/v1/admin/products?q=miel&categoryId=" + category + "&shopId=" + id).with(as("ADMIN"))).andExpect(status().isOk());
+        verify(admin).listProducts(null, "miel", category, id, 0, 20);
         mvc.perform(get("/api/v1/admin/users?role=SELLER&status=ACTIVE&q=Hery").with(as("ADMIN"))).andExpect(status().isOk());
         verify(admin).listUsers(Role.SELLER, UserStatus.ACTIVE, "Hery", 0, 20);
         mvc.perform(get("/api/v1/admin/orders?status=DELIVERED").with(as("ADMIN"))).andExpect(status().isOk());
         verify(admin).listOrders(OrderStatus.DELIVERED, 0, 20);
     }
     @Test void rejectionAndSuspensionRequireNonBlankReason() throws Exception {
-        for (String path : new String[]{"products/" + id + "/reject", "users/" + id + "/suspend", "users/" + id + "/ban"}) {
+        for (String path : new String[]{"products/" + id + "/reject", "products/" + id + "/withdraw",
+            "users/" + id + "/suspend", "users/" + id + "/ban", "shops/" + id + "/suspend"}) {
             mvc.perform(post("/api/v1/admin/" + path).with(as("ADMIN")).contentType("application/json")
                 .content("{\"reason\":\"   \"}")).andExpect(status().isBadRequest());
         }
-        verifyNoInteractions(admin);
+        verifyNoInteractions(admin, shops);
     }
     @Test void validRejectionAndReportResolutionUseCanonicalRoutes() throws Exception {
         mvc.perform(post("/api/v1/admin/products/" + id + "/reject").with(as("ADMIN"))
@@ -87,7 +95,39 @@ class AdminAccessTest {
         verify(admin).rejectProduct(id, "Photo illisible");
         mvc.perform(post("/api/v1/admin/reports/" + id + "/resolve").with(as("ADMIN"))
             .contentType("application/json").content("{\"status\":\"DISMISSED\",\"note\":\"Sans objet\"}")).andExpect(status().isOk());
-        verify(admin).resolveReport(id, id, mg.inmybush.api.report.entity.ReportStatus.DISMISSED, "Sans objet");
+        verify(reports).changeStatus(id, id, mg.inmybush.api.report.entity.ReportStatus.DISMISSED, "Sans objet");
+    }
+    @Test void suspensionsCarryTheAdministratorAndTheReason() throws Exception {
+        UUID target = UUID.randomUUID();
+        mvc.perform(post("/api/v1/admin/users/" + target + "/suspend").with(as("ADMIN"))
+            .contentType("application/json").content("{\"reason\":\"Fraude\"}")).andExpect(status().isOk());
+        verify(admin).suspendUser(id, target, "Fraude");
+        mvc.perform(post("/api/v1/admin/shops/" + target + "/suspend").with(as("ADMIN"))
+            .contentType("application/json").content("{\"reason\":\"Fraude\"}")).andExpect(status().isOk());
+        verify(shops).suspend(target, "Fraude");
+        mvc.perform(post("/api/v1/admin/shops/" + target + "/reactivate").with(as("ADMIN"))).andExpect(status().isOk());
+        verify(shops).reactivate(target);
+    }
+    @Test void shopAndReportRoutesReachTheirServices() throws Exception {
+        mvc.perform(get("/api/v1/admin/shops?status=SUSPENDED&q=Hery").with(as("ADMIN"))).andExpect(status().isOk());
+        verify(shops).list(mg.inmybush.api.shop.entity.ShopStatus.SUSPENDED, "Hery", 0, 20);
+        mvc.perform(get("/api/v1/admin/shops/" + id).with(as("ADMIN"))).andExpect(status().isOk());
+        verify(shops).get(id);
+        mvc.perform(get("/api/v1/admin/reports?status=OPEN&type=SHOP").with(as("ADMIN"))).andExpect(status().isOk());
+        verify(reports).list(mg.inmybush.api.report.entity.ReportStatus.OPEN, mg.inmybush.api.report.entity.TargetType.SHOP, 0, 20);
+        mvc.perform(get("/api/v1/admin/reports/" + id).with(as("ADMIN"))).andExpect(status().isOk());
+        verify(reports).get(id);
+        mvc.perform(post("/api/v1/admin/reports/" + id + "/notes").with(as("ADMIN"))
+            .contentType("application/json").content("{\"body\":\"Vendeur contacté\"}")).andExpect(status().isCreated());
+        verify(reports).addNote(id, id, "Vendeur contacté");
+        mvc.perform(post("/api/v1/admin/reports/" + id + "/notes").with(as("ADMIN"))
+            .contentType("application/json").content("{\"body\":\" \"}")).andExpect(status().isBadRequest());
+    }
+    @Test void sellersCannotManageShopsOrReports() throws Exception {
+        mvc.perform(get("/api/v1/admin/shops").with(as("SELLER"))).andExpect(status().isForbidden());
+        mvc.perform(post("/api/v1/admin/shops/" + id + "/reactivate").with(as("SELLER"))).andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/admin/reports/" + id).with(as("SELLER"))).andExpect(status().isForbidden());
+        verifyNoInteractions(shops, reports);
     }
     @Test void onlyAdminsManageCategories() throws Exception {
         mvc.perform(get("/api/v1/admin/categories").with(as("SELLER"))).andExpect(status().isForbidden());

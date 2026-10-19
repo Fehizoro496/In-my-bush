@@ -5,7 +5,7 @@ vi.mock("@/lib/admin/actions", () => ({ adminMutation: vi.fn() }));
 const { AdminProductsTable } = await import("./AdminProductsTable");
 const product = {
   id: "p1", name: "Miel de litchi", description: "Pot de 500 g", slug: "miel", price: 12000, unitLabel: "pot", stock: 8,
-  status: "PENDING_REVIEW" as const, rejectionReason: null, images: [], category: { name: "Épicerie" }, shop: { name: "Rucher" },
+  status: "PENDING_REVIEW" as const, rejectionReason: null, images: [], category: { name: "Épicerie" }, shop: { id: "s1", name: "Rucher" },
   createdAt: "2026-10-08T10:00:00Z", submitted: "08/10/2026",
 };
 

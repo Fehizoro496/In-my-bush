@@ -51,8 +51,12 @@ export const ROUTES = {
   adminProducts: "/admin/produits",
   adminCategories: "/admin/categories",
   adminUsers: "/admin/utilisateurs",
+  adminUser: (id: string) => `/admin/utilisateurs/${segment(id)}`,
+  adminShops: "/admin/boutiques",
+  adminShop: (id: string) => `/admin/boutiques/${segment(id)}`,
   adminOrders: "/admin/commandes",
   adminReports: "/admin/signalements",
+  adminReport: (id: string) => `/admin/signalements/${segment(id)}`,
   adminAudit: "/admin/journal",
 
   // Linked from the footer, pages not built yet (see PLANNED_ROUTES)

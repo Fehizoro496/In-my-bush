@@ -23,6 +23,22 @@ export const PRODUCT_STATUS: Record<string, Tag> = {
   ARCHIVED: { label: "Archivé", tone: "neutral" },
 };
 
+export const SHOP_STATUS: Record<string, Tag> = {
+  ACTIVE: { label: "Ouverte", tone: "done" },
+  PAUSED: { label: "En pause", tone: "neutral" },
+  SUSPENDED: { label: "Suspendue", tone: "danger" },
+};
+
+export const REPORT_STATUS: Record<string, Tag> = {
+  OPEN: { label: "Ouvert", tone: "warning" },
+  IN_REVIEW: { label: "En cours", tone: "info" },
+  RESOLVED: { label: "Résolu", tone: "done" },
+  DISMISSED: { label: "Classé sans suite", tone: "neutral" },
+};
+
+/** What a report points at. */
+export const REPORT_TARGET: Record<string, string> = { PRODUCT: "Produit", SHOP: "Boutique", USER: "Compte", REVIEW: "Avis", MESSAGE: "Message" };
+
 export const CATEGORY_STATE: Record<string, Tag> = {
   ACTIVE: { label: "Active", tone: "done" },
   INACTIVE: { label: "Désactivée", tone: "neutral" },
@@ -52,6 +68,9 @@ export const AUDIT_ACTION: Record<string, Tag> = {
   USER_REACTIVATED: { label: "Compte réactivé", tone: "done" },
   PRODUCT_APPROVED: { label: "Produit approuvé", tone: "done" },
   PRODUCT_REJECTED: { label: "Produit refusé", tone: "danger" },
+  PRODUCT_WITHDRAWN: { label: "Produit retiré de la vente", tone: "danger" },
+  SHOP_SUSPENDED: { label: "Boutique suspendue", tone: "warning" },
+  SHOP_REACTIVATED: { label: "Boutique réactivée", tone: "done" },
   REPORT_RESOLVED: { label: "Signalement résolu", tone: "done" },
   REPORT_DISMISSED: { label: "Signalement classé", tone: "neutral" },
   REPORT_IN_REVIEW: { label: "Signalement en cours", tone: "info" },

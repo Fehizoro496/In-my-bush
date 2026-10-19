@@ -4,6 +4,8 @@ import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.UUID;
+import mg.inmybush.api.admin.dto.AdminShopRef;
+import mg.inmybush.api.admin.dto.AdminUserDetailResponse;
 import mg.inmybush.api.admin.dto.AdminUserResponse;
 import mg.inmybush.api.admin.dto.DashboardResponse;
 import mg.inmybush.api.auth.service.RefreshTokenService;
@@ -12,16 +14,16 @@ import mg.inmybush.api.catalog.entity.ProductStatus;
 import mg.inmybush.api.catalog.mapper.ProductMapper;
 import mg.inmybush.api.catalog.repository.ProductRepository;
 import mg.inmybush.api.catalog.service.ProductModerationService;
+import mg.inmybush.api.common.ConflictException;
 import mg.inmybush.api.common.NotFoundException;
 import mg.inmybush.api.common.PageResponse;
 import mg.inmybush.api.common.Pages;
 import mg.inmybush.api.order.dto.OrderSummaryResponse;
 import mg.inmybush.api.order.entity.OrderStatus;
 import mg.inmybush.api.order.repository.OrderRepository;
-import mg.inmybush.api.report.dto.ReportResponse;
 import mg.inmybush.api.report.entity.ReportStatus;
+import mg.inmybush.api.report.entity.TargetType;
 import mg.inmybush.api.report.repository.ReportRepository;
-import mg.inmybush.api.report.service.ReportService;
 import mg.inmybush.api.shop.repository.ShopRepository;
 import mg.inmybush.api.user.entity.Role;
 import mg.inmybush.api.user.entity.User;
@@ -39,24 +41,24 @@ public class AdminService {
     private final ProductRepository products;
     private final OrderRepository orders;
     private final ReportRepository reports;
-    private final ReportService reportService;
     private final ProductModerationService productModeration;
     private final RefreshTokenService refreshTokens;
     private final AuditService audit;
+    private final ModerationNotifier notifier;
 
     public AdminService(UserRepository users, ShopRepository shops, ProductRepository products,
-                        OrderRepository orders, ReportRepository reports, ReportService reportService,
+                        OrderRepository orders, ReportRepository reports,
                         ProductModerationService productModeration,
-                        RefreshTokenService refreshTokens, AuditService audit) {
+                        RefreshTokenService refreshTokens, AuditService audit, ModerationNotifier notifier) {
         this.users = users;
         this.shops = shops;
         this.products = products;
         this.orders = orders;
         this.reports = reports;
-        this.reportService = reportService;
         this.productModeration = productModeration;
         this.refreshTokens = refreshTokens;
         this.audit = audit;
+        this.notifier = notifier;
     }
 
     @Transactional(readOnly = true)
@@ -95,37 +97,69 @@ public class AdminService {
         return PageResponse.of(users.findAll(spec, Pages.newestFirst(page, size)), AdminUserResponse::from);
     }
 
-    @Transactional
-    public AdminUserResponse suspendUser(UUID userId, String reason) {
-        User user = users.findById(userId).orElseThrow(() -> NotFoundException.of("Utilisateur", userId));
-        user.setStatus(UserStatus.SUSPENDED);
-        refreshTokens.revokeAll(userId);
-        audit.record("USER_SUSPENDED", "USER", userId, reason.trim());
-        return AdminUserResponse.from(user);
+    @Transactional(readOnly = true)
+    public AdminUserDetailResponse user(UUID userId) {
+        User user = requireUser(userId);
+        return new AdminUserDetailResponse(AdminUserResponse.from(user),
+            AdminShopRef.from(shops.findByOwnerId(userId).orElse(null)), orders.countByBuyerId(userId),
+            reports.countByTargetTypeAndTargetId(TargetType.USER, userId), audit.history("USER", userId));
     }
 
     @Transactional
-    public AdminUserResponse banUser(UUID userId, String reason) {
-        User user = users.findById(userId).orElseThrow(() -> NotFoundException.of("Utilisateur", userId));
-        user.setStatus(UserStatus.BANNED);
-        refreshTokens.revokeAll(userId);
-        audit.record("USER_BANNED", "USER", userId, reason.trim());
-        return AdminUserResponse.from(user);
+    public AdminUserResponse suspendUser(UUID adminId, UUID userId, String reason) {
+        return withdrawAccess(adminId, userId, reason.trim(), false);
+    }
+
+    @Transactional
+    public AdminUserResponse banUser(UUID adminId, UUID userId, String reason) {
+        return withdrawAccess(adminId, userId, reason.trim(), true);
     }
 
     @Transactional
     public AdminUserResponse reactivateUser(UUID userId) {
-        User user = users.findById(userId).orElseThrow(() -> NotFoundException.of("Utilisateur", userId));
+        User user = requireUser(userId);
+        if (user.isActive()) {
+            throw new ConflictException("INVALID_USER_STATUS", "Ce compte est déjà actif.");
+        }
         user.setStatus(UserStatus.ACTIVE);
         audit.record("USER_REACTIVATED", "USER", userId, null);
+        notifier.accountReactivated(user);
         return AdminUserResponse.from(user);
+    }
+
+    /**
+     * Suspends or bans an account and closes its sessions. An administrator can neither lock themselves out
+     * nor take away the last active administrator access.
+     */
+    private AdminUserResponse withdrawAccess(UUID adminId, UUID userId, String reason, boolean ban) {
+        if (userId.equals(adminId)) {
+            throw new ConflictException("SELF_MODERATION", "Vous ne pouvez pas suspendre ou bannir votre propre compte.");
+        }
+        User user = requireUser(userId);
+        UserStatus target = ban ? UserStatus.BANNED : UserStatus.SUSPENDED;
+        if (user.getStatus() == target) {
+            throw new ConflictException("INVALID_USER_STATUS", ban ? "Ce compte est déjà banni." : "Ce compte est déjà suspendu.");
+        }
+        if (user.hasRole(Role.ADMIN) && users.lockActiveAdmins().stream().allMatch(a -> a.getId().equals(userId))) {
+            throw new ConflictException("LAST_ADMIN", "C'est le dernier compte administrateur actif : il ne peut pas être désactivé.");
+        }
+        user.setStatus(target);
+        refreshTokens.revokeAll(userId);
+        audit.record(ban ? "USER_BANNED" : "USER_SUSPENDED", "USER", userId, reason);
+        notifier.accountSuspended(user, reason, ban);
+        return AdminUserResponse.from(user);
+    }
+
+    private User requireUser(UUID userId) {
+        return users.findById(userId).orElseThrow(() -> NotFoundException.of("Utilisateur", userId));
     }
 
     // ------------------------------------------------------------------ products
 
     @Transactional(readOnly = true)
-    public PageResponse<SellerProductResponse> listProducts(ProductStatus status, int page, int size) {
-        return productModeration.list(status, null, page, size);
+    public PageResponse<SellerProductResponse> listProducts(ProductStatus status, String q, UUID categoryId, UUID shopId,
+        int page, int size) {
+        return productModeration.list(status, q, categoryId, shopId, page, size);
     }
 
     @Transactional(readOnly = true)
@@ -146,25 +180,17 @@ public class AdminService {
         audit.record("PRODUCT_REJECTED", "PRODUCT", productId, reason.trim());
     }
 
+    @Transactional
+    public void withdrawProduct(UUID productId, String reason) {
+        productModeration.withdraw(productId, reason);
+        audit.record("PRODUCT_WITHDRAWN", "PRODUCT", productId, reason.trim());
+    }
+
     // ------------------------------------------------------------------ orders
 
     @Transactional(readOnly = true)
     public PageResponse<OrderSummaryResponse> listOrders(OrderStatus status, int page, int size) {
         return PageResponse.of(status == null ? orders.findAllWithDetails(Pages.newestFirst(page, size))
             : orders.findByStatus(status, Pages.newestFirst(page, size)), OrderSummaryResponse::from);
-    }
-
-    // ------------------------------------------------------------------ reports
-
-    @Transactional(readOnly = true)
-    public PageResponse<ReportResponse> listReports(ReportStatus status, int page, int size) {
-        return reportService.list(status, page, size);
-    }
-
-    @Transactional
-    public ReportResponse resolveReport(UUID adminId, UUID reportId, ReportStatus newStatus, String note) {
-        var result = reportService.resolve(adminId, reportId, newStatus, note);
-        audit.record("REPORT_" + newStatus.name(), "REPORT", reportId, note);
-        return result;
     }
 }
