@@ -97,13 +97,13 @@ Ces décisions conditionnent les règles et le suivi admin du lot 3 ; elles ne s
 | **Catégories** | Création, modification, ordre d’affichage et désactivation avec gestion des produits déjà associés. |
 | **Notifications métier** | Informer les personnes concernées d’une suspension ou d’une décision de modération (le rejet et l’approbation d’un produit notifient déjà le vendeur). |
 
-- [ ] Finaliser la gestion et la modération des produits.
-- [ ] Finaliser la gestion des utilisateurs.
-- [ ] Créer l’espace de gestion des boutiques.
-- [ ] Finaliser le traitement des signalements.
+- [x] Finaliser la gestion et la modération des produits.
+- [x] Finaliser la gestion des utilisateurs.
+- [x] Créer l’espace de gestion des boutiques.
+- [x] Finaliser le traitement des signalements.
 - [x] Implémenter la gestion des catégories.
-- [ ] Déclencher les notifications liées aux décisions de modération.
-- [ ] Prévoir des protections contre l’auto-suspension accidentelle et la suppression du dernier accès administrateur.
+- [x] Déclencher les notifications liées aux décisions de modération.
+- [x] Prévoir des protections contre l’auto-suspension accidentelle et la suppression du dernier accès administrateur.
 - [ ] Valider le parcours **soumission → modération → achat** avec l’application mobile côté vendeur et acheteur, et le backoffice web côté admin. La livraison, la réception et les cas d’annulation seront validés au lot 3.
 
 **Critère de validation :** l’équipe gère les cas courants de modération depuis le backoffice, sans modification directe en base. Sur mobile, un vendeur soumet un produit, l’admin le valide sur le web, un acheteur le commande.
