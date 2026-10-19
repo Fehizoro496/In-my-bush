@@ -35,6 +35,10 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     long countByStatus(OrderStatus status);
 
+    long countByBuyerId(UUID buyerId);
+
+    long countByShopId(UUID shopId);
+
     @Query("select o from Order o where o.status = :status and o.acceptBefore < :now")
     List<Order> findExpiredPending(@Param("status") OrderStatus status, @Param("now") Instant now);
 

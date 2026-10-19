@@ -8,6 +8,7 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 import mg.inmybush.api.common.BaseEntity;
+import mg.inmybush.api.common.ConflictException;
 
 @Entity
 @Table(name = "reports")
@@ -53,7 +54,23 @@ public class Report extends BaseEntity {
         this.details = details;
     }
 
+    public boolean isClosed() {
+        return status == ReportStatus.RESOLVED || status == ReportStatus.DISMISSED;
+    }
+
+    /** OPEN → IN_REVIEW: a moderator takes the report in charge. */
+    public void startReview() {
+        if (status != ReportStatus.OPEN) {
+            throw new ConflictException("INVALID_REPORT_STATUS", "Seul un signalement ouvert peut être pris en charge.");
+        }
+        status = ReportStatus.IN_REVIEW;
+    }
+
+    /** OPEN | IN_REVIEW → RESOLVED | DISMISSED, with the reason of the decision. */
     public void resolve(UUID adminId, ReportStatus newStatus, String note) {
+        if (isClosed()) {
+            throw new ConflictException("INVALID_REPORT_STATUS", "Ce signalement a déjà été traité.");
+        }
         this.status = newStatus;
         this.resolutionNote = note;
         this.resolvedBy = adminId;

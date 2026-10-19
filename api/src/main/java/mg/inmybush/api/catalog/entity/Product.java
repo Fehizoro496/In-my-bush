@@ -110,6 +110,13 @@ public class Product extends BaseEntity {
         rejectionReason = reason;
     }
 
+    /** Moderation takes a published product off sale; the seller sees why and may correct and resubmit it. */
+    public void withdraw(String reason) {
+        requireStatus(ProductStatus.PUBLISHED);
+        status = ProductStatus.REJECTED;
+        rejectionReason = reason;
+    }
+
     public void archive() {
         status = ProductStatus.ARCHIVED;
     }

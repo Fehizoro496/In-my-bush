@@ -57,6 +57,19 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
         + "where p.status = :status and p.shop.status = mg.inmybush.api.shop.entity.ShopStatus.ACTIVE group by p.category.id")
     List<CategoryCount> countByCategory(@Param("status") ProductStatus status);
 
+    /** Products per shop and status, for the administration of shops. */
+    interface ShopStatusCount {
+        UUID getShopId();
+
+        ProductStatus getStatus();
+
+        long getCnt();
+    }
+
+    @Query("select p.shop.id as shopId, p.status as status, count(p) as cnt from Product p "
+        + "where p.shop.id in :shopIds group by p.shop.id, p.status")
+    List<ShopStatusCount> countByShopAndStatus(@Param("shopIds") Collection<UUID> shopIds);
+
     /** Products of every status per category, for the administration of categories. */
     @Query("select p.category.id as categoryId, count(p) as cnt from Product p group by p.category.id")
     List<CategoryCount> countAllByCategory();

@@ -1,5 +1,7 @@
 package mg.inmybush.api.admin.service;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -36,8 +38,21 @@ public class AuditService {
     @Transactional(readOnly = true)
     public PageResponse<AuditEventResponse> list(int page, int size) {
         Page<AuditEvent> found = events.findAll(Pages.newestFirst(page, size));
-        Map<UUID, String> names = users.findAllById(found.map(AuditEvent::getActorId).toSet()).stream()
-            .collect(Collectors.toMap(User::getId, u -> u.getFirstName() + " " + u.getLastName()));
+        Map<UUID, String> names = names(found.map(AuditEvent::getActorId).toSet());
         return PageResponse.of(found, e -> AuditEventResponse.from(e, names.get(e.getActorId())));
+    }
+
+    /** The latest decisions taken on one target, newest first. */
+    @Transactional(readOnly = true)
+    public List<AuditEventResponse> history(String type, UUID target) {
+        List<AuditEvent> found = events.findTop50ByTargetTypeAndTargetIdOrderByCreatedAtDesc(type, target);
+        Map<UUID, String> names = names(found.stream().map(AuditEvent::getActorId).toList());
+        return found.stream().map(e -> AuditEventResponse.from(e, names.get(e.getActorId()))).toList();
+    }
+
+    /** Full names of the given accounts, by id. */
+    @Transactional(readOnly = true)
+    public Map<UUID, String> names(Collection<UUID> ids) {
+        return users.findAllById(ids).stream().collect(Collectors.toMap(User::getId, User::getFullName));
     }
 }

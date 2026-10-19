@@ -52,6 +52,7 @@ class AdminFoundationIT {
     @Autowired ProductRepository products;
     @Autowired AuditRepository audit;
     @Autowired AuthRateLimiter limiter;
+    @Autowired mg.inmybush.api.notification.repository.NotificationRepository notifications;
 
     User user(String first, boolean admin) {
         String unique = UUID.randomUUID().toString();
@@ -121,6 +122,84 @@ class AdminFoundationIT {
         mvc.perform(get("/api/v1/admin/categories").header("Authorization", token)).andExpect(status().isOk())
             .andExpect(jsonPath("$[?(@.id == '" + categoryId + "')].active").value(false));
         assertTrue(audit.findAll().stream().anyMatch(e -> "CATEGORY_DEACTIVATED".equals(e.getAction()) && categoryId.equals(e.getTargetId())));
+    }
+    Product published(Shop shop) {
+        Product product = new Product(shop, categories.findAll().get(0), "Miel " + UUID.randomUUID(), UUID.randomUUID().toString());
+        product.setUnit(ProductUnit.JAR);
+        product.setPrice(12000);
+        product.setStock(5);
+        product.submitForReview();
+        product.approve();
+        return products.saveAndFlush(product);
+    }
+    @Test void suspendingAShopHidesItsProductsUntilItIsReactivated() throws Exception {
+        String token = "Bearer " + login(user("Admin", true)).get("accessToken").asText();
+        User seller = user("Vendeur", false);
+        Shop shop = shops.saveAndFlush(new Shop(seller, "Rucher test", UUID.randomUUID().toString()));
+        Product product = published(shop);
+        mvc.perform(get("/api/v1/products/" + product.getSlug())).andExpect(status().isOk());
+        mvc.perform(post("/api/v1/admin/shops/" + shop.getId() + "/suspend").header("Authorization", token)
+            .contentType("application/json").content("{\"reason\":\"Commandes jamais livrées\"}"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("SUSPENDED"))
+            .andExpect(jsonPath("$.productCounts.PUBLISHED").value(1));
+        mvc.perform(get("/api/v1/products/" + product.getSlug())).andExpect(status().isNotFound());
+        mvc.perform(get("/api/v1/admin/shops?status=SUSPENDED&q=Rucher").header("Authorization", token))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.items[?(@.id == '" + shop.getId() + "')].ownerName").value("Vendeur Test"));
+        mvc.perform(get("/api/v1/admin/shops/" + shop.getId()).header("Authorization", token)).andExpect(status().isOk())
+            .andExpect(jsonPath("$.history[0].action").value("SHOP_SUSPENDED"))
+            .andExpect(jsonPath("$.history[0].reason").value("Commandes jamais livrées"));
+        mvc.perform(post("/api/v1/admin/shops/" + shop.getId() + "/reactivate").header("Authorization", token))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("ACTIVE"));
+        mvc.perform(get("/api/v1/products/" + product.getSlug())).andExpect(status().isOk());
+        assertEquals(2, notifications.findByUserId(seller.getId(), org.springframework.data.domain.Pageable.unpaged()).getTotalElements());
+    }
+    @Test void aReportIsTakenInChargeAnnotatedAndClosedWithAReason() throws Exception {
+        String token = "Bearer " + login(user("Admin", true)).get("accessToken").asText();
+        User reporter = user("Client", false);
+        Product product = published(shops.saveAndFlush(new Shop(user("Vendeur", false), "Ferme test", UUID.randomUUID().toString())));
+        var created = json.readTree(mvc.perform(post("/api/v1/reports").header("Authorization", "Bearer " + login(reporter).get("accessToken").asText())
+            .contentType("application/json").content("{\"targetType\":\"PRODUCT\",\"targetId\":\"" + product.getId() + "\",\"reason\":\"Allégation trompeuse\"}"))
+            .andReturn().getResponse().getContentAsString());
+        String path = "/api/v1/admin/reports/" + created.get("id").asText();
+        mvc.perform(get(path).header("Authorization", token)).andExpect(status().isOk())
+            .andExpect(jsonPath("$.target.title").value(product.getName()))
+            .andExpect(jsonPath("$.target.shopName").value("Ferme test"))
+            .andExpect(jsonPath("$.reporterName").value("Client Test"));
+        mvc.perform(post(path + "/resolve").header("Authorization", token).contentType("application/json")
+            .content("{\"status\":\"IN_REVIEW\"}")).andExpect(status().isOk()).andExpect(jsonPath("$.status").value("IN_REVIEW"));
+        mvc.perform(post(path + "/notes").header("Authorization", token).contentType("application/json")
+            .content("{\"body\":\"Fiche vérifiée avec le vendeur\"}")).andExpect(status().isCreated());
+        mvc.perform(post(path + "/resolve").header("Authorization", token).contentType("application/json")
+            .content("{\"status\":\"RESOLVED\"}")).andExpect(status().isBadRequest());
+        mvc.perform(post(path + "/resolve").header("Authorization", token).contentType("application/json")
+            .content("{\"status\":\"RESOLVED\",\"note\":\"Produit retiré de la vente\"}")).andExpect(status().isOk());
+        mvc.perform(get(path).header("Authorization", token)).andExpect(status().isOk())
+            .andExpect(jsonPath("$.report.status").value("RESOLVED"))
+            .andExpect(jsonPath("$.notes[0].body").value("Fiche vérifiée avec le vendeur"))
+            .andExpect(jsonPath("$.history.length()").value(2))
+            .andExpect(jsonPath("$.history[0].action").value("REPORT_RESOLVED"));
+        assertEquals(1, notifications.findByUserId(reporter.getId(), org.springframework.data.domain.Pageable.unpaged()).getTotalElements());
+    }
+    @Test void aPublishedProductIsWithdrawnAndAnAdministratorKeepsTheirOwnAccess() throws Exception {
+        User admin = user("Admin", true);
+        String token = "Bearer " + login(admin).get("accessToken").asText();
+        User seller = user("Vendeur", false);
+        Product product = published(shops.saveAndFlush(new Shop(seller, "Verger test", UUID.randomUUID().toString())));
+        mvc.perform(post("/api/v1/admin/products/" + product.getId() + "/withdraw").header("Authorization", token)
+            .contentType("application/json").content("{\"reason\":\"Allégation santé interdite\"}")).andExpect(status().isNoContent());
+        Product withdrawn = products.findById(product.getId()).orElseThrow();
+        assertEquals(ProductStatus.REJECTED, withdrawn.getStatus());
+        assertEquals("Allégation santé interdite", withdrawn.getRejectionReason());
+        mvc.perform(get("/api/v1/products/" + product.getSlug())).andExpect(status().isNotFound());
+        mvc.perform(post("/api/v1/admin/users/" + admin.getId() + "/suspend").header("Authorization", token)
+            .contentType("application/json").content("{\"reason\":\"Test\"}"))
+            .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("SELF_MODERATION"));
+        mvc.perform(post("/api/v1/admin/users/" + seller.getId() + "/suspend").header("Authorization", token)
+            .contentType("application/json").content("{\"reason\":\"Récidive\"}")).andExpect(status().isOk());
+        mvc.perform(get("/api/v1/admin/users/" + seller.getId()).header("Authorization", token)).andExpect(status().isOk())
+            .andExpect(jsonPath("$.shop.name").value("Verger test"))
+            .andExpect(jsonPath("$.history[0].action").value("USER_SUSPENDED"))
+            .andExpect(jsonPath("$.history[0].actorName").value("Admin Test"));
     }
     @Test void failedDecisionsDoNotCreateAuditEvents() throws Exception {
         String token = login(user("Admin", true)).get("accessToken").asText();
